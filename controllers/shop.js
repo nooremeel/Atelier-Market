@@ -8,86 +8,80 @@ const { PAGLOCK } = require('sequelize/lib/table-hints');
 
 const ITEMS_PER_PAGE = 4;
 
+const SORTS = {
+  price_asc: { price: 1 },
+  price_desc: { price: -1 },
+  title_asc: { title: 1 },
+  newest: { _id: -1 },
+};
+
+function buildProductQuery(req) {
+  const q = (req.query.q || '').trim();
+  const category = (req.query.category || '').trim();
+  const minPrice = req.query.minPrice !== undefined ? Number(req.query.minPrice) : undefined;
+  const maxPrice = req.query.maxPrice !== undefined ? Number(req.query.maxPrice) : undefined;
+  const filter = {};
+  if (q) {
+    filter.$or = [
+      { title: { $regex: q, $options: 'i' } },
+      { description: { $regex: q, $options: 'i' } },
+    ];
+  }
+  if (category) filter.title = { $regex: category, $options: 'i' };
+  if (!Number.isNaN(minPrice) && minPrice !== undefined) filter.price = { ...(filter.price || {}), $gte: minPrice };
+  if (!Number.isNaN(maxPrice) && maxPrice !== undefined) filter.price = { ...(filter.price || {}), $lte: maxPrice };
+  return filter;
+}
+
 exports.getProducts = (req, res, next) => {
   const page = +req.query.page || 1;
+  const filter = buildProductQuery(req);
+  const sort = SORTS[req.query.sort] || SORTS.newest;
   let totalItems;
-  Product
-    .find()
+  Product.find(filter)
     .countDocuments()
-    .then(productsCount => {
-      totalItems = productsCount;
-      return Product.find()
+    .then((count) => {
+      totalItems = count;
+      return Product.find(filter)
+        .sort(sort)
         .skip((page - 1) * ITEMS_PER_PAGE)
-        .limit(ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
     })
-    .then(products => {
-      res.render('shop/product-list', {
-        products: products,
-        pageTitle: 'Product-list',
-        path: '/product-list',
-        currentPage: page,
-        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-        hasPreviousPage: page > 1,
-        nextPage: page + 1,
-        previousPage: page - 1,
-        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
+    .then((products) => {
+      res.json({
+        products,
+        pagination: {
+          currentPage: page,
+          totalItems,
+          lastPage: Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE)),
+          hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+          hasPreviousPage: page > 1,
+          nextPage: page + 1,
+          previousPage: page - 1,
+        },
       });
     })
-    .catch(err => {
+    .catch((err) => {
       const error = new Error(err);
-      error.httpsStatusCode = 500;
+      error.httpStatusCode = 500;
       return next(error);
     });
 };
 
 exports.getProduct = (req, res, next) => {
-  const productId = req.params.productId;
-  Product.findById(productId)
-    .then(product => {
-      res.render('shop/product-detail', {
-        product: product,
-        pageTitle: product.title,
-        path: '/product-detail'
-      });
+  Product.findById(req.params.productId)
+    .then((product) => {
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      res.json({ product });
     })
-    .catch(err => {
+    .catch((err) => {
       const error = new Error(err);
-      error.httpsStatusCode = 500;
+      error.httpStatusCode = 500;
       return next(error);
     });
 };
 
-exports.getIndex = (req, res, next) => {
-  const page = +req.query.page || 1;
-  let totalItems;
-  Product
-    .find()
-    .countDocuments()
-    .then(productsCount => {
-      totalItems = productsCount;
-      return Product.find()
-        .skip((page - 1) * ITEMS_PER_PAGE)
-        .limit(ITEMS_PER_PAGE)
-    })
-    .then(products => {
-      res.render('shop/index', {
-        products: products,
-        pageTitle: 'Shop',
-        path: '/',
-        currentPage: page,
-        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-        hasPreviousPage: page > 1,
-        nextPage: page + 1,
-        previousPage: page - 1,
-        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
-      });
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpsStatusCode = 500;
-      return next(error);
-    });
-};
+exports.getIndex = (req, res, next) => exports.getProducts(req, res, next);
 
 exports.getCart = (req, res, next) => {
   req.user
