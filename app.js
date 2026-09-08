@@ -28,13 +28,11 @@ const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO
 
 const app = express();
 
-// Under test the session store must not open a real network connection on import.
-const store = process.env.NODE_ENV === 'test'
-    ? undefined
-    : new mongodbStore({
-        uri: MONGODB_URI,
-        collection: 'sessions'
-    });
+// Only build the network-backed session store when run as the entrypoint;
+// on bare require() (tests) express-session falls back to its MemoryStore.
+const store = require.main === module
+    ? new mongodbStore({ uri: MONGODB_URI, collection: 'sessions' })
+    : undefined;
 const csrfProtection = csrf();
 
 

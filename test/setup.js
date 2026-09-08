@@ -8,6 +8,8 @@ let mongod;
 
 beforeAll(async () => {
   mongod = await MongoMemoryServer.create();
+  // Vitest already sets NODE_ENV=test at startup (before app.js is required at
+  // collection time); this line is kept only as an explicit intent marker.
   process.env.NODE_ENV = 'test';
   await mongoose.connect(mongod.getUri());
 });
