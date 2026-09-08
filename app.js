@@ -94,9 +94,7 @@ app.use((req, res, next) => {
 app.use(csrfProtection);
 app.use(flash());
 
-app.use('/admin', adminData.routes);
-app.use(shopRoutes);
-app.use(authRoutes);
+app.use('/api', require('./routes/api'));
 
 
 app.use(errorController.get404);
