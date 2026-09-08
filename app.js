@@ -28,10 +28,13 @@ const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO
 
 const app = express();
 
-const store = new mongodbStore({
-    uri: MONGODB_URI,
-    collection: 'sessions'
-});
+// Under test the session store must not open a real network connection on import.
+const store = process.env.NODE_ENV === 'test'
+    ? undefined
+    : new mongodbStore({
+        uri: MONGODB_URI,
+        collection: 'sessions'
+    });
 const csrfProtection = csrf();
 
 
@@ -53,9 +56,6 @@ const fileFilter = (req, file, cb) => {
 
 
 };
-app.set('view engine', 'ejs');
-app.set('views', 'views');
-
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
 
 app.use(helmet({
@@ -95,30 +95,22 @@ app.use((req, res, next) => {
 });
 app.use(csrfProtection);
 app.use(flash());
-app.use((req, res, next) => {
-    res.locals.isAuthenticated = req.session.isLoggedIn;
-    res.locals.csrfToken = req.csrfToken();
-    next();
-})
 
 app.use('/admin', adminData.routes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
 
-app.use('/500', errorController.get500);
 app.use(errorController.get404);
 app.use((error, req, res, next) => {
-    res.locals.isAuthenticated = req.session?.isLoggedIn;
-    res.status(500).render('500', { pageTitle: 'Error', path: '/500' });
-})
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+});
 
-mongoose.connect(MONGODB_URI)
-    .then(result => {
+if (require.main === module) {
+    mongoose.connect(MONGODB_URI)
+        .then(() => app.listen(process.env.PORT || 3000))
+        .catch(err => console.log(err));
+}
 
-
-        // https.createServer({key: privateKey, cert: certificate}, app).listen(process.env.PORT || 3000);
-        app.listen(process.env.PORT || 3000); 
-    }
-    )
-    .catch(err => console.log(err));
+module.exports = app;
