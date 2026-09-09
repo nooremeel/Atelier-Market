@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { App } from './App';
 
-it('renders the running message', () => {
+it('renders the site header wordmark', async () => {
   render(<App />);
-  expect(screen.getByText(/client is running/i)).toBeInTheDocument();
+  expect(await screen.findAllByText('SHOP')).not.toHaveLength(0);
 });
