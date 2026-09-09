@@ -10,10 +10,10 @@ import { CheckoutPage } from './features/orders/CheckoutPage';
 import { OrdersPage } from './features/orders/OrdersPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { RegisterPage } from './features/auth/RegisterPage';
+import { RequestResetPage } from './features/auth/RequestResetPage';
+import { SetPasswordPage } from './features/auth/SetPasswordPage';
 
 // Placeholder screens — each is replaced with a real import by a later task.
-function RequestResetPage() { return <p>Request reset</p>; }
-function SetPasswordPage() { return <p>Set password</p>; }
 function AdminListPage() { return <p>Admin list</p>; }
 function AdminFormPage({ mode }: { mode: 'create' | 'edit' }) { return <p>Admin form: {mode}</p>; }
 function NotFound() { return <p>Not found</p>; }
