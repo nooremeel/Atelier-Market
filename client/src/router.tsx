@@ -13,9 +13,9 @@ import { RegisterPage } from './features/auth/RegisterPage';
 import { RequestResetPage } from './features/auth/RequestResetPage';
 import { SetPasswordPage } from './features/auth/SetPasswordPage';
 import { AdminListPage } from './features/admin/AdminListPage';
+import { AdminFormPage } from './features/admin/AdminFormPage';
 
 // Placeholder screens — each is replaced with a real import by a later task.
-function AdminFormPage({ mode }: { mode: 'create' | 'edit' }) { return <p>Admin form: {mode}</p>; }
 function NotFound() { return <p>Not found</p>; }
 
 export const router = createBrowserRouter([
