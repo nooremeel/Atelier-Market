@@ -3,3 +3,7 @@ node_modules/
 *.key
 *.cert
 nodemon.json
+public/app/
+client/node_modules/
+access.log
+data/invoices/invoice-*.pdf

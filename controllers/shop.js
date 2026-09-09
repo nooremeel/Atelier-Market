@@ -81,8 +81,6 @@ exports.getProduct = (req, res, next) => {
     });
 };
 
-exports.getIndex = (req, res, next) => exports.getProducts(req, res, next);
-
 function serializeCart(user) {
   const items = user.cart.items
     .filter((i) => i.productId)

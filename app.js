@@ -2,9 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const adminData = require('./routes/admin');
-const shopRoutes = require('./routes/shop');
-const authRoutes = require('./routes/auth');
 const csrf = require('csurf');
 const flash = require('connect-flash');
 const multer = require('multer');
@@ -96,6 +93,14 @@ app.use(csrfProtection);
 app.use(flash());
 
 app.use('/api', require('./routes/api'));
+
+const SPA_DIR = path.join(__dirname, 'public', 'app');
+app.use(express.static(SPA_DIR));
+app.get(/^\/(?!api|images).*/, (req, res) => {
+    const indexFile = path.join(SPA_DIR, 'index.html');
+    if (fs.existsSync(indexFile)) return res.sendFile(indexFile);
+    res.status(503).json({ message: 'SPA build not found. Run: cd client && npm run build' });
+});
 
 
 app.use(errorController.get404);
