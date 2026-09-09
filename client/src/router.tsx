@@ -14,13 +14,13 @@ import { RequestResetPage } from './features/auth/RequestResetPage';
 import { SetPasswordPage } from './features/auth/SetPasswordPage';
 import { AdminListPage } from './features/admin/AdminListPage';
 import { AdminFormPage } from './features/admin/AdminFormPage';
-
-// Placeholder screens — each is replaced with a real import by a later task.
-function NotFound() { return <p>Not found</p>; }
+import { NotFound } from './pages/NotFound';
+import { RouteError } from './pages/RouteError';
 
 export const router = createBrowserRouter([
   {
     element: <AppShell />,
+    errorElement: <RouteError />,
     children: [
       { path: '/', element: <Home /> },
       { path: '/products', element: <Catalog /> },

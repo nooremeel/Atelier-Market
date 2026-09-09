@@ -127,3 +127,19 @@ The environment includes predefined script execution blocks configured inside `p
 ## 🎓 Acknowledgements
 
 This application was constructed as an extensive operational extension of the **NodeJS - The Complete Guide (incl. MVC, REST APIs, GraphQL)** curriculum by Academind (Maximilian Schwarzmüller), focusing heavily on building robust backend pipelines, securing user inputs, managing persistent server storage layers, and deploying best practices for server-side architecture.
+
+---
+
+## Running the app
+
+### Development (two terminals)
+1. `npm run start:dev` — API on http://localhost:3000
+2. `npm run client:dev` — SPA on http://localhost:5173 (proxies /api and /images)
+
+Open http://localhost:5173.
+
+### Production
+1. `npm run build` — builds the SPA into `public/app/`
+2. `npm start` — Express serves the API and the built SPA
+
+Open http://localhost:3000.
