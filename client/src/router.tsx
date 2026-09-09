@@ -4,9 +4,9 @@ import { RequireAuth } from './auth/RequireAuth';
 import { Styleguide } from './design-system/Styleguide';
 import { Home } from './features/products/Home';
 import { Catalog } from './features/products/Catalog';
+import { ProductDetail } from './features/products/ProductDetail';
 
 // Placeholder screens — each is replaced with a real import by a later task.
-function ProductDetail() { return <p>Product detail</p>; }
 function CartPage() { return <p>Cart</p>; }
 function CheckoutPage() { return <p>Checkout</p>; }
 function OrdersPage() { return <p>Orders</p>; }
