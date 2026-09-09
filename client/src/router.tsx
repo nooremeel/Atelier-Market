@@ -2,9 +2,9 @@ import { createBrowserRouter } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
 import { RequireAuth } from './auth/RequireAuth';
 import { Styleguide } from './design-system/Styleguide';
+import { Home } from './features/products/Home';
 
 // Placeholder screens — each is replaced with a real import by a later task.
-function Home() { return <p>Home</p>; }
 function Catalog() { return <p>Catalog</p>; }
 function ProductDetail() { return <p>Product detail</p>; }
 function CartPage() { return <p>Cart</p>; }
