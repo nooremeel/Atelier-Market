@@ -1,4 +1,6 @@
 import { useProducts } from './useProducts';
+import { useAddToCart } from '../cart/useCart';
+import { useAuth } from '../../auth/AuthProvider';
 import { ProductGrid } from '../../components/ProductGrid';
 import { ProductCard } from '../../components/ProductCard';
 import { Skeleton } from '../../components/Skeleton';
@@ -7,6 +9,8 @@ import { Button } from '../../components/Button';
 import { Link } from '../../components/Link';
 
 export function Home() {
+  const { user } = useAuth();
+  const addToCart = useAddToCart();
   const { data, isLoading, isError, refetch } = useProducts({ page: 1 });
 
   return (
@@ -42,7 +46,16 @@ export function Home() {
       )}
 
       {data && data.products.length > 0 && (
-        <ProductGrid products={data.products} renderItem={(p) => <ProductCard product={p} />} />
+        <ProductGrid
+          products={data.products}
+          renderItem={(p) => (
+            <ProductCard
+              product={p}
+              onAddToCart={user ? (id) => addToCart.mutate(id) : undefined}
+              adding={addToCart.isPending && addToCart.variables === p._id}
+            />
+          )}
+        />
       )}
     </>
   );

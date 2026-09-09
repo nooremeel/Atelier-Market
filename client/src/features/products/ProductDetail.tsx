@@ -1,6 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useProduct } from './useProduct';
+import { useAddToCart } from '../cart/useCart';
+import { useAuth } from '../../auth/AuthProvider';
 import { Breadcrumb } from '../../components/Breadcrumb';
+import { Button } from '../../components/Button';
 import { Price } from '../../components/Price';
 import { RatingStars } from '../../components/RatingStars';
 import { Skeleton } from '../../components/Skeleton';
@@ -10,6 +13,8 @@ import { ApiError } from '../../lib/api';
 
 export function ProductDetail() {
   const { id = '' } = useParams();
+  const { user } = useAuth();
+  const addToCart = useAddToCart();
   const { data, isLoading, error } = useProduct(id);
 
   if (isLoading) {
@@ -46,7 +51,7 @@ export function ProductDetail() {
             <RatingStars value={0} /> No ratings yet
           </div>
           <p className="text-ink">{p.description}</p>
-          {/* Add-to-cart button injected in Task 20 */}
+          {user && <Button className="w-full" loading={addToCart.isPending} onClick={() => addToCart.mutate(p._id)}>Add to cart</Button>}
         </div>
       </div>
     </div>

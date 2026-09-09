@@ -5,9 +5,9 @@ import { Styleguide } from './design-system/Styleguide';
 import { Home } from './features/products/Home';
 import { Catalog } from './features/products/Catalog';
 import { ProductDetail } from './features/products/ProductDetail';
+import { CartPage } from './features/cart/CartPage';
 
 // Placeholder screens — each is replaced with a real import by a later task.
-function CartPage() { return <p>Cart</p>; }
 function CheckoutPage() { return <p>Checkout</p>; }
 function OrdersPage() { return <p>Orders</p>; }
 function LoginPage() { return <p>Login</p>; }

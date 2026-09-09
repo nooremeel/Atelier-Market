@@ -7,6 +7,8 @@ import { http, HttpResponse } from 'msw';
 import { beforeEach } from 'vitest';
 import { server } from '../../test/server';
 import { queryClient } from '../../lib/queryClient';
+import { AuthProvider } from '../../auth/AuthProvider';
+import { ToastProvider } from '../../components/ToastProvider';
 import { Catalog } from './Catalog';
 
 const page1 = {
@@ -18,7 +20,15 @@ const page1 = {
 };
 
 function wrap(ui: ReactNode) {
-  return <QueryClientProvider client={queryClient}><MemoryRouter initialEntries={['/products']}>{ui}</MemoryRouter></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ToastProvider>
+          <MemoryRouter initialEntries={['/products']}>{ui}</MemoryRouter>
+        </ToastProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
 }
 
 beforeEach(() => {

@@ -5,14 +5,20 @@ import { http, HttpResponse } from 'msw';
 import { beforeEach } from 'vitest';
 import { server } from '../../test/server';
 import { queryClient } from '../../lib/queryClient';
+import { AuthProvider } from '../../auth/AuthProvider';
+import { ToastProvider } from '../../components/ToastProvider';
 import { ProductDetail } from './ProductDetail';
 
 function wrap(id: string) {
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/products/${id}`]}>
-        <Routes><Route path="/products/:id" element={<ProductDetail />} /></Routes>
-      </MemoryRouter>
+      <AuthProvider>
+        <ToastProvider>
+          <MemoryRouter initialEntries={[`/products/${id}`]}>
+            <Routes><Route path="/products/:id" element={<ProductDetail />} /></Routes>
+          </MemoryRouter>
+        </ToastProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

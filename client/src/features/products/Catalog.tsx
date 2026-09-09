@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useProducts, type ProductQuery } from './useProducts';
+import { useAddToCart } from '../cart/useCart';
+import { useAuth } from '../../auth/AuthProvider';
 import { ProductFilters } from './ProductFilters';
 import { ProductGrid } from '../../components/ProductGrid';
 import { ProductCard } from '../../components/ProductCard';
@@ -42,6 +44,8 @@ export function Catalog() {
     }, 300);
   };
 
+  const { user } = useAuth();
+  const addToCart = useAddToCart();
   const { data, isLoading, isError, refetch } = useProducts(params);
   const hasFilters = Boolean(params.q || params.sort || params.minPrice || params.maxPrice || params.category);
 
@@ -71,7 +75,16 @@ export function Catalog() {
 
       {data && data.products.length > 0 && (
         <>
-          <ProductGrid products={data.products} renderItem={(p) => <ProductCard product={p} />} />
+          <ProductGrid
+            products={data.products}
+            renderItem={(p) => (
+              <ProductCard
+                product={p}
+                onAddToCart={user ? (id) => addToCart.mutate(id) : undefined}
+                adding={addToCart.isPending && addToCart.variables === p._id}
+              />
+            )}
+          />
           <div className="my-8 flex justify-center">
             <Pagination
               currentPage={data.pagination.currentPage}
