@@ -22,6 +22,9 @@ export function usePlaceOrder() {
       queryClient.invalidateQueries({ queryKey: ['checkout'] });
       notify('Order placed', 'success');
     },
-    onError: (err: Error) => notify(err.message || 'Could not place the order', 'error'),
+    onError: (err: Error) => {
+      queryClient.invalidateQueries({ queryKey: ['checkout'] });
+      notify(err.message || 'Could not place the order', 'error');
+    },
   });
 }

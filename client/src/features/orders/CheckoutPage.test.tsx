@@ -41,3 +41,17 @@ it('places an order and navigates to /orders', async () => {
   await userEvent.click(await screen.findByRole('button', { name: /place order/i }));
   expect(await screen.findByText('orders page')).toBeInTheDocument();
 });
+
+it('shows an error toast when the order fails', async () => {
+  server.use(
+    http.get('/api/checkout', () => HttpResponse.json({
+      items: [{ product: { _id: 'p1', title: 'Dates', price: 15, description: 'd', imageUrl: 'i', userId: 'u' }, quantity: 2 }],
+      totalItems: 2, totalPrice: 30,
+    })),
+    http.get('/api/csrf-token', () => HttpResponse.json({ csrfToken: 't' })),
+    http.post('/api/orders', () => HttpResponse.json({ message: 'Your cart is empty' }, { status: 400 })),
+  );
+  render(wrap());
+  await userEvent.click(await screen.findByRole('button', { name: /place order/i }));
+  expect(await screen.findByText(/your cart is empty|could not place the order/i)).toBeInTheDocument();
+});
