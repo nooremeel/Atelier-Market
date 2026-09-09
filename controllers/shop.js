@@ -83,53 +83,59 @@ exports.getProduct = (req, res, next) => {
 
 exports.getIndex = (req, res, next) => exports.getProducts(req, res, next);
 
+function serializeCart(user) {
+  const items = user.cart.items
+    .filter((i) => i.productId)
+    .map((i) => ({ product: i.productId, quantity: i.quantity }));
+  const totalItems = items.reduce((s, i) => s + i.quantity, 0);
+  const totalPrice = items.reduce((s, i) => s + i.quantity * i.product.price, 0);
+  return { items, totalItems, totalPrice };
+}
+
 exports.getCart = (req, res, next) => {
   req.user
     .populate('cart.items.productId')
-    .then(user => {
-      const products = user.cart.items;
-      res.render('shop/cart', {
-        path: '/cart',
-        pageTitle: 'Your Cart',
-        products: products
-      });
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpsStatusCode = 500;
-      return next(error);
-    });
+    .then((user) => res.json(serializeCart(user)))
+    .catch((err) => next(new Error(err)));
 };
 
 exports.postCart = (req, res, next) => {
-  const productId = req.body.productId;
-  Product.findById(productId)
-    .then(product => {
+  Product.findById(req.body.productId)
+    .then((product) => {
+      if (!product) return null;
       return req.user.addToCart(product);
     })
-    .then(result => {
-      console.log(result);
-      res.redirect('/cart');
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpsStatusCode = 500;
-      return next(error);
-    });
+    .then(() => req.user.populate('cart.items.productId'))
+    .then((user) => res.json(serializeCart(user)))
+    .catch((err) => next(new Error(err)));
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {
-  const productId = req.body.productId;
   req.user
-    .removeFromCart(productId)
-    .then(() => {
-      res.redirect('/cart');
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpsStatusCode = 500;
-      return next(error);
-    });
+    .removeFromCart(req.body.productId)
+    .then(() => req.user.populate('cart.items.productId'))
+    .then((user) => res.json(serializeCart(user)))
+    .catch((err) => next(new Error(err)));
+};
+
+exports.postCartDecrement = (req, res, next) => {
+  const id = String(req.body.productId);
+  const line = req.user.cart.items.find((i) => String(i.productId) === id);
+  if (!line) {
+    return req.user
+      .populate('cart.items.productId')
+      .then((user) => res.json(serializeCart(user)));
+  }
+  if (line.quantity <= 1) {
+    req.user.cart.items = req.user.cart.items.filter((i) => String(i.productId) !== id);
+  } else {
+    line.quantity -= 1;
+  }
+  req.user
+    .save()
+    .then(() => req.user.populate('cart.items.productId'))
+    .then((user) => res.json(serializeCart(user)))
+    .catch((err) => next(new Error(err)));
 };
 
 exports.getCheckout = (req, res, next) => {
