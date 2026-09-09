@@ -8,10 +8,10 @@ import { ProductDetail } from './features/products/ProductDetail';
 import { CartPage } from './features/cart/CartPage';
 import { CheckoutPage } from './features/orders/CheckoutPage';
 import { OrdersPage } from './features/orders/OrdersPage';
+import { LoginPage } from './features/auth/LoginPage';
+import { RegisterPage } from './features/auth/RegisterPage';
 
 // Placeholder screens — each is replaced with a real import by a later task.
-function LoginPage() { return <p>Login</p>; }
-function RegisterPage() { return <p>Register</p>; }
 function RequestResetPage() { return <p>Request reset</p>; }
 function SetPasswordPage() { return <p>Set password</p>; }
 function AdminListPage() { return <p>Admin list</p>; }
