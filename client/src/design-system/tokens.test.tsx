@@ -1,5 +1,3 @@
-import { render } from '@testing-library/react';
-
 it('exposes core custom properties on :root', async () => {
   await import('./tokens.css');
   // jsdom does not parse @import chains; assert the file is importable and
