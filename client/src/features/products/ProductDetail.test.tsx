@@ -33,7 +33,5 @@ it('shows the product', async () => {
 it('shows not-found on 404', async () => {
   server.use(http.get('/api/products/nope', () => new HttpResponse(JSON.stringify({ message: 'Product not found' }), { status: 404 })));
   render(wrap('nope'));
-  // Global queryClient has retry:1; the 404 retries once (~1s backoff) before
-  // settling into the error state, so allow more than the default 1s timeout.
-  expect(await screen.findByText(/product not found/i, undefined, { timeout: 3000 })).toBeInTheDocument();
+  expect(await screen.findByText(/product not found/i)).toBeInTheDocument();
 });
