@@ -5,10 +5,6 @@ const authController = require('../controllers/auth');
 const User = require('../models/user');
 const router = express.Router();
 
-router.get('/login', authController.getLogin);
-
-router.get('/signup', authController.getSignup);
-
 router.post(
     '/login',
 
@@ -53,11 +49,9 @@ router.post('/signup', [
 
 router.post('/logout', authController.postLogout);
 
-router.get('/reset-password', authController.getReset);
-
 router.post('/reset-password', authController.postReset);
 
-router.get('/reset-password/:token', authController.getChangePassword);
+router.get('/reset-password/:token', authController.getResetToken);
 
 router.post('/change-password', authController.postChangePassword);
 
