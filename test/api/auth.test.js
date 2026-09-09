@@ -53,4 +53,20 @@ describe('auth API', () => {
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
   });
+
+  it('rejects a NoSQL operator payload on reset-password with 422', async () => {
+    const a = agent();
+    const csrf = await csrfFor(a);
+    const res = await a.post('/api/auth/reset-password').set('csrf-token', csrf)
+      .send({ email: { $ne: null } });
+    expect(res.status).toBe(422);
+  });
+
+  it('rejects a NoSQL operator payload on change-password with 422', async () => {
+    const a = agent();
+    const csrf = await csrfFor(a);
+    const res = await a.post('/api/auth/change-password').set('csrf-token', csrf)
+      .send({ password: 'weak', userId: { $ne: null }, passwordToken: { $ne: null } });
+    expect(res.status).toBe(422);
+  });
 });

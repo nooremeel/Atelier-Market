@@ -49,10 +49,22 @@ router.post('/signup', [
 
 router.post('/logout', authController.postLogout);
 
-router.post('/reset-password', authController.postReset);
+router.post(
+    '/reset-password',
+    [ body('email').isEmail().withMessage('Please enter a valid email address.').normalizeEmail() ],
+    authController.postReset
+);
 
 router.get('/reset-password/:token', authController.getResetToken);
 
-router.post('/change-password', authController.postChangePassword);
+router.post(
+    '/change-password',
+    [
+        body('userId').isMongoId().withMessage('Invalid request'),
+        body('passwordToken').isString().matches(/^[a-f0-9]{64}$/).withMessage('Invalid or malformed reset token'),
+        body('password').isStrongPassword().withMessage('Password must be at least 8 characters with an uppercase letter, a lowercase letter, a number, and a symbol'),
+    ],
+    authController.postChangePassword
+);
 
 module.exports = router;

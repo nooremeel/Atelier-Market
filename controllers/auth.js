@@ -53,6 +53,10 @@ exports.postLogout = (req, res) => {
 };
 
 exports.postReset = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errorMessage: errors.array()[0].msg, validationErrors: errors.array() });
+  }
   crypto.randomBytes(32, (err, buffer) => {
     if (err) return res.status(500).json({ message: 'Could not start reset' });
     const token = buffer.toString('hex');
@@ -78,6 +82,10 @@ exports.getResetToken = (req, res, next) => {
 };
 
 exports.postChangePassword = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errorMessage: errors.array()[0].msg, validationErrors: errors.array() });
+  }
   const { password: newPassword, userId, passwordToken } = req.body;
   let resetUser;
   User.findOne({ resetToken: passwordToken, resetTokenExpire: { $gt: Date.now() }, _id: userId })
