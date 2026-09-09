@@ -12,9 +12,9 @@ import { LoginPage } from './features/auth/LoginPage';
 import { RegisterPage } from './features/auth/RegisterPage';
 import { RequestResetPage } from './features/auth/RequestResetPage';
 import { SetPasswordPage } from './features/auth/SetPasswordPage';
+import { AdminListPage } from './features/admin/AdminListPage';
 
 // Placeholder screens — each is replaced with a real import by a later task.
-function AdminListPage() { return <p>Admin list</p>; }
 function AdminFormPage({ mode }: { mode: 'create' | 'edit' }) { return <p>Admin form: {mode}</p>; }
 function NotFound() { return <p>Not found</p>; }
 
