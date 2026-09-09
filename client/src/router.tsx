@@ -7,9 +7,9 @@ import { Catalog } from './features/products/Catalog';
 import { ProductDetail } from './features/products/ProductDetail';
 import { CartPage } from './features/cart/CartPage';
 import { CheckoutPage } from './features/orders/CheckoutPage';
+import { OrdersPage } from './features/orders/OrdersPage';
 
 // Placeholder screens — each is replaced with a real import by a later task.
-function OrdersPage() { return <p>Orders</p>; }
 function LoginPage() { return <p>Login</p>; }
 function RegisterPage() { return <p>Register</p>; }
 function RequestResetPage() { return <p>Request reset</p>; }
