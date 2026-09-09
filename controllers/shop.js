@@ -141,77 +141,45 @@ exports.postCartDecrement = (req, res, next) => {
 exports.getCheckout = (req, res, next) => {
   req.user
     .populate('cart.items.productId')
-    .then(user => {
-      const totalPrice = user.cart.items.reduce((sum, i) => {
-        return sum + i.quantity * i.productId.price;
-      }, 0);
-      const products = user.cart.items;
-      res.render('shop/checkout', {
-        path: 'checkout',
-        pageTitle: 'checkout',
-        products: products,
-        totalSum: totalPrice
-      });
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpsStatusCode = 500;
-      return next(error);
-    });
+    .then((user) => res.json(serializeCart(user)))
+    .catch((err) => next(new Error(err)));
 };
 
 exports.postOrder = (req, res, next) => {
   req.user
     .populate('cart.items.productId')
-    .then(user => {
-      const products = user.cart.items.map(i => {
-        return {
-          quantity: i.quantity,
-          productData: { ...i.productId._doc }
-        };
-      });
-
-      const totalPrice = user.cart.items.reduce((sum, i) => {
-        return sum + i.quantity * i.productId.price;
-      }, 0);
-
+    .then((user) => {
+      const lines = user.cart.items.filter((i) => i.productId);
+      if (lines.length === 0) {
+        res.status(400).json({ message: 'Your cart is empty' });
+        return null;
+      }
+      const products = lines.map((i) => ({
+        quantity: i.quantity,
+        productData: { ...i.productId._doc },
+      }));
+      const totalPrice = lines.reduce((s, i) => s + i.quantity * i.productId.price, 0);
       const order = new Order({
-        user: {
-          email: req.user.email,
-          userId: req.user
-        },
-        products: products,
-        totalPrice: totalPrice
+        user: { email: req.user.email, userId: req.user._id },
+        products,
+        totalPrice,
       });
-      return order.save();
+      return order.save().then((saved) =>
+        req.user.clearCart().then(() =>
+          res.status(201).json({
+            order: { _id: saved._id, totalPrice: saved.totalPrice, products: saved.products },
+          }),
+        ),
+      );
     })
-    .then(() => {
-      return req.user.clearCart();
-    })
-    .then(() => {
-      res.redirect('/orders');
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpsStatusCode = 500;
-      return next(error);
-    });
+    .catch((err) => next(new Error(err)));
 };
 
 exports.getOrders = (req, res, next) => {
   Order.find({ 'user.userId': req.user._id })
-    .then(orders => {
-      res.render('shop/orders', {
-        path: '/orders',
-        pageTitle: 'Your Orders',
-        orders: orders
-      });
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpsStatusCode = 500;
-      return next(error);
-    });
+    .sort({ _id: -1 })
+    .then((orders) => res.json({ orders }))
+    .catch((err) => next(new Error(err)));
 };
 
 exports.getInvoice = (req, res, next) => {
@@ -219,10 +187,10 @@ exports.getInvoice = (req, res, next) => {
   Order.findById(orderId)
     .then(order => {
       if (!order) {
-        return next(new Error('no order found'));
+        return res.status(404).json({ message: 'Order not found' });
       }
       if (order.user.userId.toString() !== req.user._id.toString()) {
-        return next(new Error('Unauthorized access'));
+        return res.status(403).json({ message: 'Not authorized' });
       }
       const invoiceName = 'invoice-' + orderId + '.pdf';
       const invoicePath = path.join(__dirname, '..', 'data', 'invoices', invoiceName);

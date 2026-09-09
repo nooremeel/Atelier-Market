@@ -21,5 +21,8 @@ router.get('/checkout', isAuth, shopController.getCheckout);
 router.get('/orders', isAuth, shopController.getOrders);
 router.post('/cart-delete-item', isAuth, shopController.postCartDeleteProduct);
 
+router.post('/orders', isAuth, shopController.postOrder);
+router.get('/orders/:orderId/invoice', isAuth, shopController.getInvoice);
+
 router.get('/orders/:orderId', isAuth, shopController.getInvoice);
 module.exports = router;
