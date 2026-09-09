@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.local
+
+# tsc -b (project references) build output for vite.config.ts
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
