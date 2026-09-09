@@ -1,3 +1,54 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background-color: var(--color-plaster);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-step-0);
+    line-height: var(--leading-body);
+    font-weight: 400;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    line-height: var(--leading-display);
+    font-weight: 400;
+    color: var(--color-ink);
+    margin: 0;
+  }
+
+  p { max-width: var(--measure); }
+
+  a {
+    color: var(--color-peacock);
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-gold-leaf);
+    outline-offset: var(--focus-offset);
+  }
+
+  img { max-width: 100%; height: auto; display: block; }
+}
+
+@layer utilities {
+  .u-measure { max-width: var(--measure); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

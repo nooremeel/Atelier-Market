@@ -1,0 +1,36 @@
+:root {
+  --color-najd: #14322a;
+  --color-plaster: #e9e3d6;
+  --color-ink: #1b1b18;
+  --color-gold-leaf: #b08a46;
+  --color-peacock: #1e6e6a;
+  --color-oxblood: #6e2a2e;
+  --color-stone: #8c8477;
+
+  --hairline: rgba(176, 138, 70, 0.4);
+
+  --font-display: 'Marcellus', 'Fraunces', serif;
+  --font-sans: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+
+  --text-step--1: 0.8125rem;
+  --text-step-0: 1rem;
+  --text-step-1: 1.1875rem;
+  --text-step-2: 1.5rem;
+  --text-step-3: 2rem;
+  --text-step-4: 2.75rem;
+  --text-step-5: 4rem;
+
+  --leading-body: 1.6;
+  --leading-display: 1.15;
+  --measure: 68ch;
+
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+  --space-24: 96px; --space-32: 128px;
+
+  --radius-sm: 2px;
+  --radius: 3px;
+
+  --focus-ring: 0 0 0 2px var(--color-gold-leaf);
+  --focus-offset: 2px;
+}
