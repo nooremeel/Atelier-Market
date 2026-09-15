@@ -1,5 +1,4 @@
 import type { FormEvent, ReactNode } from 'react';
-import { PageHeader } from './PageHeader';
 
 type Props = {
   title: string;
@@ -11,17 +10,26 @@ type Props = {
 
 export function FormLayout({ title, error, onSubmit, children, footer }: Props) {
   return (
-    <div className="mx-auto max-w-measure">
-      <PageHeader title={title} />
-      {error && (
-        <div role="alert" className="mb-4 border border-oxblood px-4 py-3 font-sans text-step--1 text-oxblood rounded-sm">
-          {error}
+    <div className="mx-auto max-w-md py-12 sm:py-16">
+      <div className="bg-canvas/90 border border-hairline/70 p-8 sm:p-10 rounded-sm shadow-subtle transition-colors">
+        <div className="text-center mb-8">
+          <span className="font-sans text-[0.6875rem] tracking-[0.24em] uppercase text-gold-leaf font-medium">
+            Atelier Account
+          </span>
+          <h1 className="font-display text-step-3 text-ink font-normal mt-1">{title}</h1>
         </div>
-      )}
-      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        {children}
-        <div className="flex items-center gap-4 pt-2">{footer}</div>
-      </form>
+
+        {error && (
+          <div role="alert" className="mb-6 border border-oxblood/40 bg-oxblood/5 px-4 py-3 font-sans text-[0.8125rem] text-oxblood rounded-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+          {children}
+          <div className="flex flex-col gap-3 pt-3 border-t border-hairline/40 mt-2 font-sans text-[0.8125rem]">{footer}</div>
+        </form>
+      </div>
     </div>
   );
 }

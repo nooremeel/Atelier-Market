@@ -6,35 +6,41 @@ import { Button } from '../../components/Button';
 import { Link } from '../../components/Link';
 import { Skeleton } from '../../components/Skeleton';
 import { PageHeader } from '../../components/PageHeader';
+import { useI18n } from '../../lib/i18n';
 
 export function CartPage() {
   const { data, isLoading } = useCart();
   const add = useAddToCart();
   const dec = useDecrementCartItem();
   const remove = useRemoveCartItem();
+  const { t } = useI18n();
+
   const busyId =
     add.isPending ? add.variables :
     dec.isPending ? dec.variables :
     remove.isPending ? remove.variables : undefined;
 
   if (isLoading) {
-    return <><PageHeader title="Your cart" /><Skeleton className="h-40" /></>;
+    return <><PageHeader title={t('cart.title')} /><Skeleton className="h-40" /></>;
   }
   if (!data || data.items.length === 0) {
     return (
       <>
-        <PageHeader title="Your cart" />
-        <EmptyState title="Your cart is empty" description="Add a few things to get started."
-          action={<Link to="/products">Browse products</Link>} />
+        <PageHeader title={t('cart.title')} />
+        <EmptyState
+          title={t('cart.emptyTitle')}
+          description={t('cart.emptyDesc')}
+          action={<Link to="/products">{t('cart.exploreCollection')}</Link>}
+        />
       </>
     );
   }
 
   return (
-    <>
-      <PageHeader title="Your cart" />
-      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <div>
+    <div className="pb-16">
+      <PageHeader title={t('cart.title')} />
+      <div className="grid gap-12 lg:grid-cols-[1fr_360px] items-start">
+        <div className="flex flex-col">
           {data.items.map((line) => (
             <CartLineItem
               key={line.product._id}
@@ -46,12 +52,18 @@ export function CartPage() {
             />
           ))}
         </div>
-        <OrderSummary
-          totalItems={data.totalItems}
-          totalPrice={data.totalPrice}
-          action={<Link to="/checkout"><Button className="w-full">Proceed to checkout</Button></Link>}
-        />
+        <div className="sticky top-28">
+          <OrderSummary
+            totalItems={data.totalItems}
+            totalPrice={data.totalPrice}
+            action={
+              <Link to="/checkout">
+                <Button className="w-full" size="md">{t('cart.proceedCheckout')}</Button>
+              </Link>
+            }
+          />
+        </div>
       </div>
-    </>
+    </div>
   );
 }

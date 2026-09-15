@@ -96,7 +96,7 @@ app.use('/api', require('./routes/api'));
 
 const SPA_DIR = path.join(__dirname, 'public', 'app');
 app.use(express.static(SPA_DIR));
-app.get(/^\/(?!api|images).*/, (req, res) => {
+app.get(/^\/(?!api(?:\/|$)|images(?:\/|$)).*/, (req, res) => {
     const indexFile = path.join(SPA_DIR, 'index.html');
     if (fs.existsSync(indexFile)) return res.sendFile(indexFile);
     res.status(503).json({ message: 'SPA build not found. Run: cd client && npm run build' });
@@ -105,8 +105,12 @@ app.get(/^\/(?!api|images).*/, (req, res) => {
 
 app.use(errorController.get404);
 app.use((error, req, res, next) => {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    if (error.code === 'EBADCSRFTOKEN') {
+        return res.status(403).json({ message: 'Invalid CSRF token', code: 'EBADCSRFTOKEN' });
+    }
+    const status = error.status || error.httpStatusCode || 500;
+    if (status >= 500) console.error(error);
+    res.status(status).json({ message: status >= 500 ? 'Internal server error' : (error.message || 'Request failed') });
 });
 
 if (require.main === module) {

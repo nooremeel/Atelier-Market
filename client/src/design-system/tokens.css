@@ -1,36 +1,70 @@
 :root {
-  --color-najd: #14322a;
-  --color-plaster: #e9e3d6;
-  --color-ink: #1b1b18;
-  --color-gold-leaf: #b08a46;
-  --color-peacock: #1e6e6a;
-  --color-oxblood: #6e2a2e;
-  --color-stone: #8c8477;
+  --color-najd: #18181b;
+  --color-plaster: #faf8f5;
+  --color-ink: #121212;
+  --color-gold-leaf: #c5a880;
+  --color-peacock: #2d4a43;
+  --color-oxblood: #7a282e;
+  --color-stone: #8a857d;
 
-  --hairline: rgba(176, 138, 70, 0.4);
+  --color-silk: #f4efea;
+  --color-canvas: #ffffff;
+  --color-charcoal: #1c1c1e;
+  --color-sand: #eee9e0;
 
-  --font-display: 'Marcellus', 'Fraunces', serif;
-  --font-sans: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --hairline: rgba(197, 168, 128, 0.28);
+  --hairline-subtle: rgba(18, 18, 18, 0.08);
+
+  --font-display: 'Cormorant Garamond', 'Marcellus', 'Fraunces', serif;
+  --font-sans: 'Plus Jakarta Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
 
   --text-step--1: 0.8125rem;
-  --text-step-0: 1rem;
-  --text-step-1: 1.1875rem;
-  --text-step-2: 1.5rem;
-  --text-step-3: 2rem;
-  --text-step-4: 2.75rem;
-  --text-step-5: 4rem;
+  --text-step-0: 0.9375rem;
+  --text-step-1: 1.125rem;
+  --text-step-2: 1.375rem;
+  --text-step-3: 1.875rem;
+  --text-step-4: 2.5rem;
+  --text-step-5: 3.75rem;
 
-  --leading-body: 1.6;
-  --leading-display: 1.15;
+  --leading-body: 1.65;
+  --leading-display: 1.12;
   --measure: 68ch;
 
   --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
   --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
   --space-24: 96px; --space-32: 128px;
 
-  --radius-sm: 2px;
-  --radius: 3px;
+  --radius-sm: 1px;
+  --radius: 2px;
 
   --focus-ring: 0 0 0 2px var(--color-gold-leaf);
   --focus-offset: 2px;
+}
+
+.dark {
+  --color-najd: #faf8f5;
+  --color-plaster: #0e0e11;
+  --color-ink: #f5f4f0;
+  --color-gold-leaf: #d4af37;
+  --color-peacock: #4e8074;
+  --color-oxblood: #c45b63;
+  --color-stone: #9e9a93;
+
+  --color-silk: #151518;
+  --color-canvas: #1b1b1f;
+  --color-charcoal: #26262c;
+  --color-sand: #202026;
+
+  --hairline: rgba(212, 175, 55, 0.25);
+  --hairline-subtle: rgba(245, 244, 240, 0.1);
+}
+
+[dir="rtl"] {
+  --font-display: 'Amiri', 'Cormorant Garamond', serif;
+  --font-sans: 'IBM Plex Sans Arabic', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* In Arabic typography, avoid breaking cursive character ligatures */
+[dir="rtl"] [class*="tracking-"] {
+  letter-spacing: 0.02em !important;
 }

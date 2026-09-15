@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '../lib/cn';
+import { useI18n } from '../lib/i18n';
 
 type Props = {
   currentPage: number;
@@ -17,14 +18,15 @@ function windowPages(current: number, last: number): number[] {
 }
 
 export function Pagination({ currentPage, lastPage, onNavigate, toHref }: Props) {
+  const { t } = useI18n();
   if (lastPage <= 1) return null;
   const pages = windowPages(currentPage, lastPage);
   const cell =
-    'inline-flex h-9 min-w-9 items-center justify-center border border-hairline px-2 font-sans text-step--1 rounded-sm';
+    'inline-flex h-9 min-w-9 items-center justify-center border border-hairline/60 px-3 font-sans text-[0.8125rem] tracking-wider rounded-sm transition-all duration-200 text-ink hover:border-gold-leaf hover:bg-gold-leaf/5';
 
   const render = (page: number, label: ReactNode, isCurrent = false) => {
     const props = {
-      className: cn(cell, isCurrent && 'bg-najd text-plaster'),
+      className: cn(cell, isCurrent && 'bg-najd text-plaster border-najd font-medium shadow-sm'),
       'aria-current': isCurrent ? ('page' as const) : undefined,
     };
     return toHref ? (
@@ -40,9 +42,9 @@ export function Pagination({ currentPage, lastPage, onNavigate, toHref }: Props)
 
   return (
     <nav aria-label="Pagination" className="flex items-center gap-1">
-      {currentPage > 1 && render(currentPage - 1, 'Previous')}
+      {currentPage > 1 && render(currentPage - 1, t('pagination.previous'))}
       {pages.map((p) => render(p, p, p === currentPage))}
-      {currentPage < lastPage && render(currentPage + 1, 'Next')}
+      {currentPage < lastPage && render(currentPage + 1, t('pagination.next'))}
     </nav>
   );
 }

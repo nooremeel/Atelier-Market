@@ -80,10 +80,10 @@ export function AdminFormPage({ mode }: Props) {
       error={banner}
       onSubmit={onSubmit}
       footer={
-        <>
-          <Button type="submit" loading={mutation.isPending}>Save product</Button>
-          <Link to="/admin/products">Cancel</Link>
-        </>
+        <div className="flex items-center justify-between w-full">
+          <Button type="submit" size="md" loading={mutation.isPending}>Save product</Button>
+          <Link to="/admin/products" className="font-sans text-[0.75rem] tracking-[0.16em] uppercase text-stone hover:text-ink transition-colors">Cancel</Link>
+        </div>
       }
     >
       <Field label="Title" name="title" required value={values.title} onChange={set('title')} error={fieldErrors.title} />
@@ -92,13 +92,13 @@ export function AdminFormPage({ mode }: Props) {
       <Textarea label="Description" name="description" rows={5} required
         value={values.description} onChange={set('description')} error={fieldErrors.description}
         hint="Between 5 and 400 characters." />
-      <div className="flex flex-col gap-1">
-        <label htmlFor="image" className="font-sans text-step--1 text-ink">Image</label>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="image" className="font-sans text-[0.6875rem] tracking-[0.16em] uppercase text-stone font-medium">Image</label>
         {existing.data && (
-          <img src={`/${existing.data.product.imageUrl}`} alt="" className="mb-2 h-24 w-24 object-cover border border-hairline rounded-sm" />
+          <img src={`/${existing.data.product.imageUrl}`} alt="" className="mb-2 h-24 w-24 object-cover border border-hairline/70 rounded-sm bg-sand/20" />
         )}
-        <input ref={fileRef} id="image" name="image" type="file" accept="image/png,image/jpeg" className="font-sans text-step--1" />
-        {mode === 'edit' && <span className="text-step--1 text-stone">Leave empty to keep the current image.</span>}
+        <input ref={fileRef} id="image" name="image" type="file" accept="image/png,image/jpeg" className="font-sans text-[0.8125rem] text-stone file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-[0.75rem] file:font-medium file:tracking-wider file:bg-sand/40 file:text-ink hover:file:bg-gold-leaf/20 cursor-pointer" />
+        {mode === 'edit' && <span className="text-[0.75rem] text-stone">Leave empty to keep the current image.</span>}
       </div>
     </FormLayout>
   );

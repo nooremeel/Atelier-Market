@@ -8,6 +8,7 @@ import { useRegister } from './useAuthMutations';
 import { useToast } from '../../components/ToastProvider';
 import { ApiError } from '../../lib/api';
 import { validationErrorsToMap } from './validationErrorsToMap';
+import { useI18n } from '../../lib/i18n';
 
 export function RegisterPage() {
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
@@ -16,6 +17,7 @@ export function RegisterPage() {
   const register = useRegister();
   const navigate = useNavigate();
   const { notify } = useToast();
+  const { t } = useI18n();
 
   const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -47,23 +49,56 @@ export function RegisterPage() {
 
   return (
     <FormLayout
-      title="Create account"
+      title={t('auth.registerTitle')}
       error={banner}
       onSubmit={onSubmit}
       footer={
         <>
-          <Button type="submit" loading={register.isPending}>Create account</Button>
-          <Link to="/login">Already have an account?</Link>
+          <Button type="submit" size="md" className="w-full" loading={register.isPending}>
+            {register.isPending ? t('auth.creatingAccount') : t('auth.createAccount')}
+          </Button>
+          <div className="text-center pt-2 text-[0.75rem]">
+            <Link to="/login" className="text-stone hover:text-ink transition-colors">
+              {t('auth.alreadyHaveAccount')} {t('nav.login')}
+            </Link>
+          </div>
         </>
       }
     >
-      <Field label="Email" name="email" type="email" autoComplete="email" required
-        value={form.email} onChange={set('email')} error={fieldErrors.email} />
-      <Field label="Password" name="password" type="password" autoComplete="new-password" required
-        value={form.password} onChange={set('password')} error={fieldErrors.password}
-        hint="At least 8 characters, with upper, lower, number, and symbol." />
-      <Field label="Confirm password" name="confirmPassword" type="password" autoComplete="new-password" required
-        value={form.confirmPassword} onChange={set('confirmPassword')} error={fieldErrors.confirmPassword} />
+      <Field
+        label={t('auth.email')}
+        aria-label="Email"
+        name="email"
+        type="email"
+        autoComplete="email"
+        required
+        value={form.email}
+        onChange={set('email')}
+        error={fieldErrors.email}
+      />
+      <Field
+        label={t('auth.password')}
+        aria-label="Password"
+        name="password"
+        type="password"
+        autoComplete="new-password"
+        required
+        value={form.password}
+        onChange={set('password')}
+        error={fieldErrors.password}
+        hint="At least 8 characters, with upper, lower, number, and symbol."
+      />
+      <Field
+        label={t('auth.confirmPassword')}
+        aria-label="Confirm password"
+        name="confirmPassword"
+        type="password"
+        autoComplete="new-password"
+        required
+        value={form.confirmPassword}
+        onChange={set('confirmPassword')}
+        error={fieldErrors.confirmPassword}
+      />
     </FormLayout>
   );
 }

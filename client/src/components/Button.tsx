@@ -9,10 +9,10 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const VARIANTS: Record<NonNullable<Props['variant']>, string> = {
-  primary: 'bg-najd text-plaster hover:opacity-90',
-  secondary: 'bg-transparent border border-peacock text-peacock hover:bg-peacock/5',
-  ghost: 'bg-transparent text-ink hover:underline',
-  destructive: 'bg-transparent border border-oxblood text-oxblood hover:bg-oxblood/5',
+  primary: 'bg-najd text-plaster border border-najd hover:bg-black hover:border-black shadow-sm transition-all duration-200',
+  secondary: 'bg-transparent border border-gold-leaf/50 text-ink hover:border-gold-leaf hover:bg-gold-leaf/5 transition-all duration-200',
+  ghost: 'bg-transparent text-ink hover:text-gold-leaf underline-offset-4 hover:underline transition-colors duration-200',
+  destructive: 'bg-transparent border border-oxblood/40 text-oxblood hover:bg-oxblood/5 transition-all duration-200',
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
@@ -25,15 +25,15 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-sm font-sans font-medium',
-        'transition-opacity disabled:opacity-50 disabled:cursor-not-allowed',
-        size === 'sm' ? 'px-3 py-1 text-step--1' : 'px-6 py-3 text-step-0',
+        'inline-flex items-center justify-center gap-2 rounded-sm font-sans font-medium select-none',
+        'transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed',
+        size === 'sm' ? 'px-3.5 py-1.5 text-[0.75rem] tracking-[0.16em] uppercase' : 'px-6 py-3 text-[0.8125rem] tracking-[0.18em] uppercase',
         VARIANTS[variant],
         className,
       )}
       {...rest}
     >
-      {loading && <Spinner size={16} />}
+      {loading && <Spinner size={14} />}
       {children}
     </button>
   );

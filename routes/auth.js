@@ -21,16 +21,18 @@ router.post(
 
 router.post('/signup', [
     check('email')
-        .isEmail()
-        .withMessage('The email you entered is invalid, please enter a valid email')
+        .isString().withMessage('The email you entered is invalid, please enter a valid email')
+        .isEmail().withMessage('The email you entered is invalid, please enter a valid email')
+        .bail()
+        .normalizeEmail()
         .custom((value, { req }) => {
             return User.findOne({ email: value })
                 .then(userDoc => {
                     if (userDoc) {
-                        return Promise.reject('Email already exists')
+                        return Promise.reject('Email already exists');
                     }
-                })
-        }).normalizeEmail(),
+                });
+        }),
     body('password')
         .isStrongPassword()
         .withMessage('Please make sure your password has at least 8 characters, At least 1 uppercase letter, At least 1 lowercase letter, At least 1 number, and At least 1 symbol')

@@ -15,11 +15,20 @@ type Props = {
 export function CartLineItem({ line, onIncrement, onDecrement, onRemove, busy }: Props) {
   const id = line.product._id;
   return (
-    <div className="flex items-center gap-4 border-b border-hairline py-4">
-      <img src={`/${line.product.imageUrl}`} alt="" className="h-16 w-16 object-cover border border-hairline rounded-sm" />
-      <div className="flex-1">
-        <Link to={`/products/${id}`} className="text-ink hover:underline">{line.product.title}</Link>
-        <div className="mt-2">
+    <div className="flex items-center gap-5 border-b border-hairline/60 py-5">
+      <img
+        src={`/${line.product.imageUrl}`}
+        alt=""
+        className="h-20 w-20 object-cover border border-hairline/70 rounded-sm bg-sand/20 flex-shrink-0"
+      />
+      <div className="flex-1 min-w-0">
+        <Link
+          to={`/products/${id}`}
+          className="font-display text-step-1 text-ink hover:text-gold-leaf transition-colors font-normal block truncate"
+        >
+          {line.product.title}
+        </Link>
+        <div className="mt-2.5">
           <QuantityStepper
             value={line.quantity}
             busy={busy}
@@ -27,8 +36,16 @@ export function CartLineItem({ line, onIncrement, onDecrement, onRemove, busy }:
           />
         </div>
       </div>
-      <Price value={line.product.price * line.quantity} />
-      <Button variant="destructive" size="sm" onClick={() => onRemove(id)} disabled={busy}>Remove</Button>
+      <div className="text-end">
+        <div className="text-step-0 font-medium text-ink">
+          <Price value={line.product.price * line.quantity} />
+        </div>
+        <div className="mt-2">
+          <Button variant="ghost" size="sm" onClick={() => onRemove(id)} disabled={busy} className="text-stone hover:text-oxblood">
+            Remove
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

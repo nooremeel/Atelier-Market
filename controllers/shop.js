@@ -1,9 +1,9 @@
 const Product = require('../models/product');
 const Order = require('../models/order');
 const order = require('../models/order');
-const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
+const { validationResult } = require('express-validator');
 const { PAGLOCK } = require('sequelize/lib/table-hints');
 
 const ITEMS_PER_PAGE = 4;
@@ -98,17 +98,26 @@ exports.getCart = (req, res, next) => {
 };
 
 exports.postCart = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(422).json({ errorMessage: errors.array()[0].msg, validationErrors: errors.array() });
   Product.findById(req.body.productId)
     .then((product) => {
-      if (!product) return null;
+      if (!product) {
+        res.status(404).json({ message: 'Product not found' });
+        return null;
+      }
       return req.user.addToCart(product);
     })
-    .then(() => req.user.populate('cart.items.productId'))
-    .then((user) => res.json(serializeCart(user)))
+    .then((result) => {
+      if (result === null) return null;
+      return req.user.populate('cart.items.productId').then((user) => res.json(serializeCart(user)));
+    })
     .catch((err) => next(new Error(err)));
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(422).json({ errorMessage: errors.array()[0].msg, validationErrors: errors.array() });
   req.user
     .removeFromCart(req.body.productId)
     .then(() => req.user.populate('cart.items.productId'))
@@ -117,6 +126,8 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 
 exports.postCartDecrement = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(422).json({ errorMessage: errors.array()[0].msg, validationErrors: errors.array() });
   const id = String(req.body.productId);
   const line = req.user.cart.items.find((i) => String(i.productId) === id);
   if (!line) {
@@ -191,12 +202,10 @@ exports.getInvoice = (req, res, next) => {
         return res.status(403).json({ message: 'Not authorized' });
       }
       const invoiceName = 'invoice-' + orderId + '.pdf';
-      const invoicePath = path.join(__dirname, '..', 'data', 'invoices', invoiceName);
 
       const pdfDoc = new PDFDocument();
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'inline; filename="' + invoiceName + '"');
-      pdfDoc.pipe(fs.createWriteStream(invoicePath));
       pdfDoc.pipe(res);
       pdfDoc.fontSize(32).text('Invoice', {
         underline: true,

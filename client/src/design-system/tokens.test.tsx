@@ -1,9 +1,11 @@
-it('exposes core custom properties on :root', async () => {
-  await import('./tokens.css');
-  // jsdom does not parse @import chains; assert the file is importable and
-  // that a component using the var resolves to a non-empty computed style.
-  const el = document.createElement('div');
-  el.style.setProperty('color', 'var(--color-najd, #000)');
-  document.body.appendChild(el);
-  expect(el.style.color).toContain('var(--color-najd');
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+it('declares the core design tokens on :root', () => {
+  const css = readFileSync(resolve(process.cwd(), 'src/design-system/tokens.css'), 'utf8');
+  for (const name of ['--color-najd', '--color-plaster', '--color-ink', '--color-gold-leaf',
+    '--color-peacock', '--color-oxblood', '--color-stone', '--font-display', '--font-sans',
+    '--text-step-0', '--focus-ring']) {
+    expect(css).toContain(name);
+  }
 });

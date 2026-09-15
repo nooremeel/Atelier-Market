@@ -1,4 +1,4 @@
-import { getCsrfToken } from './csrf';
+import { getCsrfToken, resetCsrfToken } from './csrf';
 
 export class ApiError extends Error {
   status: number;
@@ -23,6 +23,10 @@ async function handle(res: Response): Promise<any> {
   return body;
 }
 
+function isCsrfFailure(status: number, body: any): boolean {
+  return status === 403 && (body?.message === 'Invalid CSRF token' || body?.code === 'EBADCSRFTOKEN');
+}
+
 export function apiGet<T>(path: string): Promise<T> {
   return fetch(path, { credentials: 'include' }).then(handle) as Promise<T>;
 }
@@ -31,6 +35,7 @@ export async function apiSend<T>(
   path: string,
   method: 'POST' | 'PUT' | 'DELETE',
   body?: unknown,
+  _retried = false,
 ): Promise<T> {
   const token = await getCsrfToken();
   const res = await fetch(path, {
@@ -39,6 +44,13 @@ export async function apiSend<T>(
     headers: { 'Content-Type': 'application/json', 'csrf-token': token },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
+  if (!_retried && res.status === 403) {
+    const peek = await parse(res.clone());
+    if (isCsrfFailure(res.status, peek)) {
+      resetCsrfToken();
+      return apiSend<T>(path, method, body, true);
+    }
+  }
   return handle(res);
 }
 
@@ -46,6 +58,7 @@ export async function apiUpload<T>(
   path: string,
   method: 'POST' | 'PUT',
   form: FormData,
+  _retried = false,
 ): Promise<T> {
   const token = await getCsrfToken();
   const res = await fetch(path, {
@@ -54,5 +67,12 @@ export async function apiUpload<T>(
     headers: { 'csrf-token': token },
     body: form,
   });
+  if (!_retried && res.status === 403) {
+    const peek = await parse(res.clone());
+    if (isCsrfFailure(res.status, peek)) {
+      resetCsrfToken();
+      return apiUpload<T>(path, method, form, true);
+    }
+  }
   return handle(res);
 }

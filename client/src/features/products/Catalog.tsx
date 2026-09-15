@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { useProducts, type ProductQuery } from './useProducts';
 import { useAddToCart } from '../cart/useCart';
 import { useAuth } from '../../auth/AuthProvider';
@@ -11,6 +11,7 @@ import { Skeleton } from '../../components/Skeleton';
 import { EmptyState } from '../../components/EmptyState';
 import { Button } from '../../components/Button';
 import { PageHeader } from '../../components/PageHeader';
+import { useI18n } from '../../lib/i18n';
 
 function readParams(sp: URLSearchParams): ProductQuery {
   const num = (k: string) => (sp.get(k) ? Number(sp.get(k)) : undefined);
@@ -29,6 +30,7 @@ export function Catalog() {
   const params = useMemo(() => readParams(sp), [sp]);
   const [draft, setDraft] = useState<ProductQuery>(params);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const { t } = useI18n();
 
   useEffect(() => setDraft(params), [params]);
 
@@ -38,20 +40,22 @@ export function Catalog() {
     debounceRef.current = setTimeout(() => {
       const spNext = new URLSearchParams();
       Object.entries({ ...next, page: 1 }).forEach(([k, v]) => {
-        if (v !== undefined && v !== '' ) spNext.set(k, String(v));
+        if (v !== undefined && v !== '') spNext.set(k, String(v));
       });
       setSp(spNext);
     }, 300);
   };
 
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const addToCart = useAddToCart();
   const { data, isLoading, isError, refetch } = useProducts(params);
   const hasFilters = Boolean(params.q || params.sort || params.minPrice || params.maxPrice || params.category);
 
   return (
     <>
-      <PageHeader title="Products" />
+      <PageHeader title={t('catalog.title')} subtitle={t('catalog.subtitle')} />
       <ProductFilters key={sp.toString()} value={draft} onChange={apply} />
 
       {isLoading && (
@@ -61,15 +65,18 @@ export function Catalog() {
       )}
 
       {isError && (
-        <EmptyState title="Could not load products"
-          action={<Button onClick={() => refetch()}>Try again</Button>} />
+        <EmptyState
+          title={t('catalog.emptyTitle')}
+          description={t('catalog.emptyDesc')}
+          action={<Button onClick={() => refetch()}>{t('catalog.resetBtn')}</Button>}
+        />
       )}
 
       {data && data.products.length === 0 && (
         <EmptyState
-          title={hasFilters ? 'No matches' : 'No products yet'}
-          description={hasFilters ? 'Try widening your filters.' : 'Check back soon.'}
-          action={hasFilters ? <Button onClick={() => setSp(new URLSearchParams())}>Clear filters</Button> : undefined}
+          title={hasFilters ? t('catalog.emptyTitle') : t('catalog.emptyTitle')}
+          description={hasFilters ? t('catalog.emptyDesc') : t('catalog.emptyDesc')}
+          action={hasFilters ? <Button onClick={() => setSp(new URLSearchParams())}>{t('catalog.clearFilters')}</Button> : undefined}
         />
       )}
 
@@ -80,7 +87,7 @@ export function Catalog() {
             renderItem={(p) => (
               <ProductCard
                 product={p}
-                onAddToCart={user ? (id) => addToCart.mutate(id) : undefined}
+                onAddToCart={(id) => (user ? addToCart.mutate(id) : navigate('/login', { state: { from: location.pathname } }))}
                 adding={addToCart.isPending && addToCart.variables === p._id}
               />
             )}

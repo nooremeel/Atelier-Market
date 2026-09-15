@@ -39,8 +39,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={i.id}
             role={i.tone === 'error' ? 'alert' : 'status'}
             className={cn(
-              'border bg-plaster px-4 py-3 font-sans text-step--1 rounded-sm',
-              i.tone === 'error' ? 'border-oxblood text-oxblood' : 'border-najd text-najd',
+              'border bg-white px-5 py-3.5 font-sans text-[0.8125rem] tracking-wide rounded-sm shadow-luxury transition-all animate-in fade-in slide-in-from-bottom-2',
+              i.tone === 'error' ? 'border-oxblood/60 text-oxblood' : 'border-gold-leaf/60 text-ink',
             )}
           >
             {i.msg}

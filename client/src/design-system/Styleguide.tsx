@@ -43,6 +43,9 @@ const COLOR_TOKENS: Array<{ name: string; className: string }> = [
   { name: 'peacock', className: 'bg-peacock' },
   { name: 'oxblood', className: 'bg-oxblood' },
   { name: 'stone', className: 'bg-stone' },
+  { name: 'silk', className: 'bg-silk' },
+  { name: 'charcoal', className: 'bg-charcoal' },
+  { name: 'canvas', className: 'bg-canvas' },
 ];
 
 const TYPE_STEPS = ['text-step--1', 'text-step-0', 'text-step-1', 'text-step-2', 'text-step-3', 'text-step-4', 'text-step-5'];
@@ -74,8 +77,8 @@ export function Styleguide() {
           {TYPE_STEPS.map((step) => (
             <p key={step} className={step}>{step} — The quick brown fox</p>
           ))}
-          <p className="font-display text-step-2">font-display — Marcellus display sample</p>
-          <p className="font-sans text-step-0">font-sans — IBM Plex Sans body sample</p>
+          <p className="font-display text-step-2">font-display — Cormorant Garamond &amp; Marcellus luxury serif</p>
+          <p className="font-sans text-step-0">font-sans — Plus Jakarta Sans &amp; IBM Plex Sans Arabic body sample</p>
         </div>
       </section>
 

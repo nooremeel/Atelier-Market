@@ -20,7 +20,7 @@ export function Modal({ open, onClose, title, children }: Props) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-sm p-4 transition-all"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -31,9 +31,9 @@ export function Modal({ open, onClose, title, children }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={cn('u-measure w-full border border-hairline bg-plaster p-6 rounded-sm')}
+        className={cn('u-measure w-full border border-hairline bg-white p-8 shadow-luxury rounded-sm max-w-lg animate-in fade-in zoom-in-95 duration-200')}
       >
-        <h2 className="text-step-2 mb-4">{title}</h2>
+        <h2 className="font-display text-step-3 text-ink mb-4 font-normal">{title}</h2>
         {children}
       </div>
     </div>

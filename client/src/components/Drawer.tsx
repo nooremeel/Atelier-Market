@@ -25,7 +25,7 @@ export function Drawer({ open, onClose, side = 'end', title, children }: Props) 
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 bg-ink/40"
+      className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-sm transition-opacity"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -37,11 +37,11 @@ export function Drawer({ open, onClose, side = 'end', title, children }: Props) 
         aria-modal="true"
         aria-label={title}
         className={cn(
-          'absolute inset-y-0 h-full w-80 max-w-[85vw] bg-plaster p-6 transition-transform',
+          'absolute inset-y-0 h-full w-80 max-w-[85vw] bg-white p-8 shadow-drawer transition-transform',
           side === 'end' ? 'end-0 border-s border-hairline' : 'start-0 border-e border-hairline',
         )}
       >
-        <h2 className="text-step-2 mb-4">{title}</h2>
+        <h2 className="font-display text-step-3 font-normal text-ink mb-6">{title}</h2>
         {children}
       </div>
     </div>
