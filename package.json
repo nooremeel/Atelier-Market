@@ -14,10 +14,10 @@
     "start": "node server.js",
     "start:atlas": "node app.js",
     "dev": "nodemon server.js",
-    "postinstall": "npm --prefix client install",
+    "postinstall": "npm --prefix client install --include=dev",
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
-    "build": "npm --prefix client install && npm --prefix client run build"
+    "build": "npm --prefix client install --include=dev && npm --prefix client run build"
   },
   "devDependencies": {
     "mongodb-memory-server": "^11.2.0",

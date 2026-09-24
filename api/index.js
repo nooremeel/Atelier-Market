@@ -2,8 +2,12 @@ const app = require('../app');
 const connectToDatabase = require('../util/db');
 
 module.exports = async (req, res) => {
-  // Normalize path if Vercel rewrite passes URL without /api prefix
-  if (!req.url.startsWith('/api') && !req.url.startsWith('/images')) {
+  // Handle Vercel internal rewrite path mapping
+  if (req.headers['x-matched-path']) {
+    req.url = req.headers['x-matched-path'];
+  } else if (req.url.startsWith('/api/index.js')) {
+    req.url = req.url.replace(/^\/api\/index\.js/, '/api') || '/api';
+  } else if (!req.url.startsWith('/api') && !req.url.startsWith('/images')) {
     req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
   }
 
