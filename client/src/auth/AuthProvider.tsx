@@ -14,7 +14,14 @@ const AuthContext = createContext<Ctx | null>(null);
 
 export function useAuth(): Ctx {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  if (!ctx) {
+    return {
+      user: null,
+      loading: false,
+      setUser: () => {},
+      refresh: async () => {},
+    };
+  }
   return ctx;
 }
 

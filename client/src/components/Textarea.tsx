@@ -13,7 +13,7 @@ export function Textarea({ label, name, error, hint, className, id, ...rest }: P
   const areaId = id ?? `${name}-${auto}`;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={areaId} className="font-sans text-[0.6875rem] tracking-[0.16em] uppercase text-stone font-medium">{label}</label>
+      <label htmlFor={areaId} className="font-sans text-[0.6875rem] tracking-[0.16em] uppercase text-stone dark:text-stone/95 font-medium">{label}</label>
       <textarea
         id={areaId}
         name={name}
@@ -27,7 +27,7 @@ export function Textarea({ label, name, error, hint, className, id, ...rest }: P
         )}
         {...rest}
       />
-      {hint && <span className="text-[0.75rem] text-stone">{hint}</span>}
+      {hint && <span className="text-[0.75rem] text-stone dark:text-stone/90">{hint}</span>}
       {error && <span role="alert" className="text-[0.75rem] text-oxblood">{error}</span>}
     </div>
   );

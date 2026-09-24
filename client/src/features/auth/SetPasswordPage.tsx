@@ -27,8 +27,8 @@ export function SetPasswordPage() {
     const expired = info.error instanceof ApiError && info.error.status === 404;
     return (
       <EmptyState
-        title={expired ? 'This reset link is invalid or expired' : 'Could not verify this link'}
-        action={<Link to="/reset-password">Request a new link</Link>}
+        title={expired ? t('auth.linkExpired') : t('auth.linkVerifyError')}
+        action={<Link to="/reset-password">{t('auth.requestNewLink')}</Link>}
       />
     );
   }
@@ -36,16 +36,16 @@ export function SetPasswordPage() {
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     setFieldError(undefined);
-    if (password !== confirm) { setFieldError('Passwords do not match'); return; }
+    if (password !== confirm) { setFieldError(t('auth.passwordMismatch')); return; }
     change.mutate(
       { password, userId: info.data!.userId, passwordToken: token },
       {
-        onSuccess: () => { notify('Password updated. Please log in.', 'success'); navigate('/login'); },
+        onSuccess: () => { notify(t('auth.passwordUpdated'), 'success'); navigate('/login'); },
         onError: (err) => {
           if (err instanceof ApiError && err.status === 422) {
-            setFieldError(err.body?.errorMessage || 'Could not update the password.');
+            setFieldError(err.body?.errorMessage || t('auth.updatePasswordError'));
           } else {
-            setFieldError('Could not update the password. The link may have expired.');
+            setFieldError(t('auth.updatePasswordError'));
           }
         },
       },
@@ -56,22 +56,20 @@ export function SetPasswordPage() {
     <FormLayout
       title={t('auth.setPasswordTitle')}
       onSubmit={onSubmit}
-      footer={<Button type="submit" size="md" className="w-full" loading={change.isPending}>Update password</Button>}
+      footer={<Button type="submit" size="md" className="w-full" loading={change.isPending}>{t('auth.updatePassword')}</Button>}
     >
       <Field
         label={t('auth.newPassword')}
-        aria-label="New password"
         name="password"
         type="password"
         autoComplete="new-password"
         required
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        hint="At least 8 characters, with upper, lower, number, and symbol."
+        hint={t('auth.passwordHint')}
       />
       <Field
         label={t('auth.confirmPassword')}
-        aria-label="Confirm new password"
         name="confirm"
         type="password"
         autoComplete="new-password"

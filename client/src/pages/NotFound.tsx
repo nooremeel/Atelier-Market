@@ -1,12 +1,15 @@
 import { EmptyState } from '../components/EmptyState';
 import { Link } from '../components/Link';
+import { useI18n } from '../lib/i18n';
 
 export function NotFound() {
+  const { t } = useI18n();
   return (
     <EmptyState
-      title="Page not found"
-      description="The page you were looking for is not here."
-      action={<Link to="/">Back to shop</Link>}
+      title={t('error.notFoundTitle')}
+      description={t('error.notFoundDesc')}
+      action={<Link to="/">{t('error.backToShop')}</Link>}
     />
   );
 }
+

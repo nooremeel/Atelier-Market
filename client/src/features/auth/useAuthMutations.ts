@@ -18,7 +18,7 @@ export function useLogin() {
 
 export function useRegister() {
   return useMutation({
-    mutationFn: (body: { email: string; password: string; confirmPassword: string }) =>
+    mutationFn: (body: { name?: string; email: string; password: string; confirmPassword: string; role?: 'customer' | 'seller' }) =>
       apiSend<{ user: SessionUser }>('/api/auth/signup', 'POST', body),
   });
 }

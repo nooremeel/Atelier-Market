@@ -3,8 +3,15 @@ import { apiGet } from '../../lib/api';
 import type { Pagination, Product } from '../../types';
 
 export type ProductQuery = {
-  page?: number; q?: string; category?: string;
-  sort?: string; minPrice?: number; maxPrice?: number;
+  page?:      number;
+  q?:         string;
+  category?:  string;
+  sort?:      string;
+  minPrice?:  number;
+  maxPrice?:  number;
+  badge?:     string;
+  sellerId?:  string;
+  minRating?: number;
 };
 
 export type ProductsResponse = { products: Product[]; pagination: Pagination };

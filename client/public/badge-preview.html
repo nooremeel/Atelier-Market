@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atelier Market — Brand Badge & Favicon Preview</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e0e10;
+      --card-bg: #18181b;
+      --card-border: rgba(197, 168, 128, 0.22);
+      --gold: #c5a880;
+      --gold-light: #ddc6a2;
+      --plaster: #faf8f5;
+      --stone: #8a857d;
+      --ink: #121212;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: #e4e4e7;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 40px 20px 80px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .badge-pill {
+      display: inline-block;
+      padding: 4px 14px;
+      background: rgba(197, 168, 128, 0.12);
+      border: 1px solid var(--gold);
+      border-radius: 999px;
+      color: var(--gold-light);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.75rem;
+      font-weight: 500;
+      color: var(--plaster);
+      letter-spacing: -0.01em;
+      margin-bottom: 12px;
+    }
+    p.lead {
+      color: var(--stone);
+      font-size: 1.05rem;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Grid of previews */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .card-title {
+      font-size: 0.8125rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Large Badge display */
+    .badge-hero-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+      background: radial-gradient(circle at center, rgba(197, 168, 128, 0.08) 0%, rgba(24, 24, 27, 0) 70%);
+      border-radius: 8px;
+    }
+    .badge-hero {
+      width: 220px;
+      height: 220px;
+      filter: drop-shadow(0 16px 32px rgba(0,0,0,0.6));
+      transition: transform 0.3s ease;
+    }
+    .badge-hero:hover {
+      transform: scale(1.04);
+    }
+
+    /* Concept image display */
+    .concept-img {
+      width: 220px;
+      height: 220px;
+      border-radius: 48px;
+      object-fit: cover;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.6);
+      transition: transform 0.3s ease;
+    }
+    .concept-img:hover {
+      transform: scale(1.04);
+    }
+
+    /* Google Search Simulation */
+    .google-search-mock {
+      background: #202124;
+      border-radius: 8px;
+      padding: 20px;
+      color: #bdc1c6;
+      font-family: Roboto, Arial, sans-serif;
+    }
+    .google-site-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .google-fav-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #303134;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    .google-fav-badge img {
+      width: 20px;
+      height: 20px;
+    }
+    .google-site-name {
+      color: #dadce0;
+      font-size: 0.875rem;
+      font-weight: 400;
+    }
+    .google-site-url {
+      color: #9aa0a6;
+      font-size: 0.75rem;
+    }
+    .google-result-title {
+      color: #8ab4f8;
+      font-size: 1.25rem;
+      line-height: 1.3;
+      margin-bottom: 6px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .google-result-title:hover { text-decoration: underline; }
+    .google-result-snippet {
+      color: #bdc1c6;
+      font-size: 0.875rem;
+      line-height: 1.45;
+    }
+
+    /* Browser Tab Simulation */
+    .browser-window {
+      background: #2b2b2b;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #3c3c3c;
+    }
+    .browser-tabs-bar {
+      display: flex;
+      align-items: center;
+      background: #1e1e1e;
+      padding: 8px 10px 0;
+      gap: 6px;
+    }
+    .browser-dots {
+      display: flex;
+      gap: 6px;
+      margin-right: 12px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.r { background: #ff5f56; }
+    .dot.y { background: #ffbd2e; }
+    .dot.g { background: #27c93f; }
+
+    .browser-tab {
+      background: #2b2b2b;
+      padding: 7px 14px;
+      border-radius: 6px 6px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #e1e1e1;
+      font-size: 0.75rem;
+      font-family: system-ui, sans-serif;
+      max-width: 240px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .browser-tab img {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .browser-body {
+      padding: 16px;
+      background: #2b2b2b;
+      font-size: 0.8125rem;
+      color: #888;
+      border-top: 1px solid #3c3c3c;
+    }
+
+    /* Light tab simulation */
+    .browser-window.light {
+      background: #f1f3f4;
+      border: 1px solid #dadce0;
+    }
+    .browser-window.light .browser-tabs-bar {
+      background: #dee1e6;
+    }
+    .browser-window.light .browser-tab {
+      background: #ffffff;
+      color: #3c4043;
+    }
+    .browser-window.light .browser-body {
+      background: #ffffff;
+      color: #70757a;
+      border-top: 1px solid #dadce0;
+    }
+
+    /* Navbar Wordmark Integration */
+    .navbar-preview {
+      background: #faf8f5;
+      border: 1px solid rgba(197, 168, 128, 0.3);
+      border-radius: 8px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .navbar-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .navbar-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .navbar-wordmark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      letter-spacing: 0.22em;
+      color: #121212;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .navbar-dot {
+      width: 4px;
+      height: 4px;
+      background: #c5a880;
+      border-radius: 50%;
+    }
+
+    /* Footer actions */
+    .footer-note {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--stone);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge-pill">Visual Identity & Tab Icon</div>
+      <h1>Atelier Market Brand Badge</h1>
+      <p class="lead">An unmistakable, iconic emblem designed for browser tabs, search snippets, and app icons — embodying Gulf & Levant artisan mastery.</p>
+    </header>
+
+    <div class="grid">
+      <!-- Card 1: Vector SVG Badge -->
+      <div class="card">
+        <div class="card-title">
+          <span>01. Vector Badge (Crisp SVG Favicon)</span>
+        </div>
+        <div class="badge-hero-wrap">
+          <img class="badge-hero" src="/favicon.svg" alt="Atelier Market Vector Badge" />
+        </div>
+        <p style="font-size: 0.8125rem; color: var(--stone); margin-top: 14px; text-align: center;">
+          Geometric squircle in Najd Charcoal with sculpted serif "A", pointed Levantine arch, and the signature gold-leaf dot.
+        </p>
+      </div>
+
+      <!-- Card 2: AI Visual Concept -->
+      <div class="card">
+        <div class="card-title">
+          <span>02. Rendered Luxury Concept</span>
+        </div>
+        <div class="badge-hero-wrap">
+          <img class="concept-img" src="/brand-badge-mockup.jpg" alt="Rendered Badge Concept" />
+        </div>
+        <p style="font-size: 0.8125rem; color: var(--stone); margin-top: 14px; text-align: center;">
+          Warm embossed physical hallmark look — luxury jewelry / artisan seal aesthetic.
+        </p>
+      </div>
+
+      <!-- Card 3: Google Search Result Simulation -->
+      <div class="card">
+        <div class="card-title">
+          <span>03. Google Search Snippet Preview</span>
+        </div>
+        <div class="google-search-mock">
+          <div class="google-site-row">
+            <div class="google-fav-badge">
+              <img src="/favicon.svg" alt="Google favicon preview" />
+            </div>
+            <div>
+              <div class="google-site-name">Atelier Market</div>
+              <div class="google-site-url">https://ateliermarket.com</div>
+            </div>
+          </div>
+          <div class="google-result-title">Atelier Market — Handcrafted Goods from Gulf & Levant Artisans</div>
+          <div class="google-result-snippet">Discover handcrafted ceramics, leather, glassware, metals, and more from master artisans across the Gulf and Levant region.</div>
+        </div>
+        <p style="font-size: 0.8125rem; color: var(--stone); margin-top: 14px;">
+          Just like YouTube's red button in Google Search, the dark squircle with gold emblem stands out instantly on search result pages.
+        </p>
+      </div>
+
+      <!-- Card 4: Browser Tab Simulation (Dark & Light) -->
+      <div class="card">
+        <div class="card-title">
+          <span>04. Browser Tab Simulation</span>
+        </div>
+        <!-- Dark tab -->
+        <div class="browser-window" style="margin-bottom: 16px;">
+          <div class="browser-tabs-bar">
+            <div class="browser-dots">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            </div>
+            <div class="browser-tab">
+              <img src="/favicon.svg" alt="Tab icon" />
+              <span>Atelier Market — Handcrafted Goods...</span>
+            </div>
+          </div>
+          <div class="browser-body">Dark Mode Browser Tab (16×16px Icon)</div>
+        </div>
+        <!-- Light tab -->
+        <div class="browser-window light">
+          <div class="browser-tabs-bar">
+            <div class="browser-dots">
+              <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            </div>
+            <div class="browser-tab">
+              <img src="/favicon.svg" alt="Tab icon" />
+              <span>Atelier Market — Handcrafted Goods...</span>
+            </div>
+          </div>
+          <div class="browser-body">Light Mode Browser Tab (16×16px Icon)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Width Card: Navbar Wordmark Integration -->
+    <div class="card" style="margin-bottom: 28px;">
+      <div class="card-title">
+        <span>05. Header Navbar Integration (Like YouTube's Red Button + Name)</span>
+      </div>
+      <div class="navbar-preview">
+        <div class="navbar-brand">
+          <img class="navbar-badge" src="/favicon.svg" alt="Navbar badge" />
+          <div class="navbar-wordmark">
+            <span>Atelier</span>
+            <span class="navbar-dot"></span>
+            <span>Market</span>
+          </div>
+        </div>
+        <div style="font-size: 0.6875rem; letter-spacing: 0.18em; text-transform: uppercase; color: #8a857d;">
+          Discover • Artisans • Story
+        </div>
+      </div>
+      <p style="font-size: 0.8125rem; color: var(--stone); margin-top: 14px;">
+        Placing the badge alongside the wordmark in the header creates seamless brand continuity between the tab icon and the on-site navigation.
+      </p>
+    </div>
+
+    <div class="footer-note">
+      You can open this page directly in your browser at <strong>http://localhost:5173/badge-preview.html</strong> while the Vite dev server is running!
+    </div>
+  </div>
+</body>
+</html>

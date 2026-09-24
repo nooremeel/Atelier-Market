@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { useProducts, type ProductQuery } from './useProducts';
 import { useAddToCart } from '../cart/useCart';
+import { useToggleFavourite, useFavourites } from './useFavourites';
 import { useAuth } from '../../auth/AuthProvider';
 import { ProductFilters } from './ProductFilters';
 import { ProductGrid } from '../../components/ProductGrid';
@@ -11,6 +12,7 @@ import { Skeleton } from '../../components/Skeleton';
 import { EmptyState } from '../../components/EmptyState';
 import { Button } from '../../components/Button';
 import { PageHeader } from '../../components/PageHeader';
+import { useToast } from '../../components/ToastProvider';
 import { useI18n } from '../../lib/i18n';
 
 function readParams(sp: URLSearchParams): ProductQuery {
@@ -20,6 +22,7 @@ function readParams(sp: URLSearchParams): ProductQuery {
     q: sp.get('q') ?? undefined,
     sort: sp.get('sort') ?? undefined,
     category: sp.get('category') ?? undefined,
+    badge: sp.get('badge') ?? undefined,
     minPrice: num('minPrice'),
     maxPrice: num('maxPrice'),
   };
@@ -34,29 +37,39 @@ export function Catalog() {
 
   useEffect(() => setDraft(params), [params]);
 
-  const apply = (next: ProductQuery) => {
+  const apply = (next: ProductQuery, immediate = false) => {
     setDraft(next);
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
+    const commit = () => {
       const spNext = new URLSearchParams();
       Object.entries({ ...next, page: 1 }).forEach(([k, v]) => {
         if (v !== undefined && v !== '') spNext.set(k, String(v));
       });
       setSp(spNext);
-    }, 300);
+    };
+    if (immediate) {
+      commit();
+    } else {
+      debounceRef.current = setTimeout(commit, 300);
+    }
   };
 
   const { user } = useAuth();
+  const { notify } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const addToCart = useAddToCart();
+  const toggleFavourite = useToggleFavourite();
+  const { data: favData } = useFavourites();
+  const favouriteIds = (favData?.favourites ?? []).map((f) => f._id);
   const { data, isLoading, isError, refetch } = useProducts(params);
-  const hasFilters = Boolean(params.q || params.sort || params.minPrice || params.maxPrice || params.category);
+  const isCustomSort = Boolean(params.sort && params.sort !== 'newest');
+  const hasFilters = Boolean(params.q || isCustomSort || params.minPrice || params.maxPrice || params.category || params.badge);
 
   return (
     <>
       <PageHeader title={t('catalog.title')} subtitle={t('catalog.subtitle')} />
-      <ProductFilters key={sp.toString()} value={draft} onChange={apply} />
+      <ProductFilters value={draft} onChange={apply} />
 
       {isLoading && (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -87,8 +100,24 @@ export function Catalog() {
             renderItem={(p) => (
               <ProductCard
                 product={p}
-                onAddToCart={(id) => (user ? addToCart.mutate(id) : navigate('/login', { state: { from: location.pathname } }))}
+                onAddToCart={user?.role === 'seller' ? undefined : (id) => {
+                  if (user) {
+                    addToCart.mutate(id);
+                  } else {
+                    notify('Please sign in to add items to your cart', 'error');
+                    navigate('/login', { state: { from: location.pathname, reason: 'cart' } });
+                  }
+                }}
                 adding={addToCart.isPending && addToCart.variables === p._id}
+                isFavourite={favouriteIds.includes(p._id)}
+                onToggleFavourite={(id) => {
+                  if (user) {
+                    toggleFavourite.mutate(id);
+                  } else {
+                    notify('Please sign in to save items to your favourites', 'error');
+                    navigate('/login', { state: { from: location.pathname, reason: 'favourite' } });
+                  }
+                }}
               />
             )}
           />

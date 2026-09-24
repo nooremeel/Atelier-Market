@@ -3,19 +3,19 @@ import { cn } from '../lib/cn';
 
 type Props = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
-  name: string;
+  name?: string;
   error?: string;
   hint?: string;
 };
 
 export function Field({ label, name, error, hint, className, id, ...rest }: Props) {
   const auto = useId();
-  const inputId = id ?? `${name}-${auto}`;
+  const inputId = id ?? (name ? `${name}-${auto}` : `field-${auto}`);
   const hintId = hint ? `${inputId}-hint` : undefined;
   const errorId = error ? `${inputId}-error` : undefined;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="font-sans text-[0.6875rem] tracking-[0.16em] uppercase text-stone font-medium">
+      <label htmlFor={inputId} className="font-sans text-[0.6875rem] tracking-[0.16em] uppercase text-stone dark:text-stone/95 font-medium">
         {label}
       </label>
       <input
@@ -32,7 +32,7 @@ export function Field({ label, name, error, hint, className, id, ...rest }: Prop
         )}
         {...rest}
       />
-      {hint && <span id={hintId} className="text-[0.75rem] text-stone">{hint}</span>}
+      {hint && <span id={hintId} className="text-[0.75rem] text-stone dark:text-stone/90">{hint}</span>}
       {error && <span id={errorId} role="alert" className="text-[0.75rem] text-oxblood">{error}</span>}
     </div>
   );

@@ -9,7 +9,7 @@ const TONES = {
 
 export function Tag({ tone = 'peacock', children }: { tone?: keyof typeof TONES; children: ReactNode }) {
   return (
-    <span className={cn('inline-block border px-2 py-0.5 text-step--1 rounded-none', TONES[tone])}>
+    <span className={cn('inline-block border px-2 py-0.5 text-step--1 rounded-none bg-canvas/90 backdrop-blur-sm dark:bg-canvas/95 font-medium', TONES[tone])}>
       {children}
     </span>
   );

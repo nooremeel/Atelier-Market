@@ -44,3 +44,17 @@ it('confirms before deleting', async () => {
   await userEvent.click(screen.getByRole('button', { name: /confirm/i }));
   expect(await screen.findByText(/no.*products|you have not added/i)).toBeInTheDocument();
 });
+
+it('renders stock status pill in the admin table', async () => {
+  const stockProducts = [
+    { ...product, _id: 'p1', title: 'In Stock Piece', stock: 15 },
+    { ...product, _id: 'p2', title: 'Low Stock Piece', stock: 2, lowStockThreshold: 5 },
+    { ...product, _id: 'p3', title: 'Sold Out Piece', stock: 0 },
+  ];
+  server.use(http.get('/api/admin/products', () => HttpResponse.json({ products: stockProducts })));
+  render(wrap(<AdminListPage />));
+  expect(await screen.findByText('Studio Stock')).toBeInTheDocument();
+  expect(screen.getByText('15 in stock')).toBeInTheDocument();
+  expect(screen.getByText('2 left (Low)')).toBeInTheDocument();
+  expect(screen.getByText('Sold Out')).toBeInTheDocument();
+});

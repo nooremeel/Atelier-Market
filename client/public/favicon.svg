@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Subtle gradient for the squircle background -->
+    <linearGradient id="najdGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#222226" />
+      <stop offset="100%" stop-color="#141416" />
+    </linearGradient>
+
+    <!-- Refined Gold Leaf gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ddc6a2" />
+      <stop offset="40%" stop-color="#c5a880" />
+      <stop offset="100%" stop-color="#aa8c64" />
+    </linearGradient>
+
+    <!-- Subtle radial glow behind emblem -->
+    <radialGradient id="emblemGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c5a880" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#c5a880" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Squircle container (YouTube / App-badge profile) -->
+  <rect width="512" height="512" rx="116" fill="url(#najdGrad)" />
+
+  <!-- Subtle artisan hairline border -->
+  <rect x="6" y="6" width="500" height="500" rx="110" fill="none" stroke="url(#goldGrad)" stroke-width="2" stroke-opacity="0.3" />
+
+  <!-- Ambient glow -->
+  <circle cx="256" cy="265" r="160" fill="url(#emblemGlow)" />
+
+  <!-- Artisan Hallmark "A" with Levant Arch & Gold Dot -->
+  <g fill="url(#goldGrad)">
+    <!-- Main Letter "A" Silhouette -->
+    <!-- Apex: 256, 125 | Left foot: 120, 395 | Right foot: 392, 395 -->
+    <path d="
+      M 226 135
+      L 286 135
+      C 286 135 292 155 304 190
+      L 342 305
+      L 378 385
+      C 384 395 398 395 404 395
+      L 404 402
+      L 332 402
+      L 332 395
+      C 340 395 350 393 346 383
+      L 334 350
+      L 220 350
+      L 204 384
+      C 200 393 208 395 218 395
+      L 218 402
+      L 108 402
+      L 108 395
+      C 118 395 128 393 134 381
+      L 226 135 Z
+      
+      M 256 182
+      L 230 326
+      L 282 326
+      L 256 182 Z
+    " fill-rule="evenodd" />
+
+    <!-- Levantine Pointed Archway in the lower center -->
+    <path d="
+      M 218 350
+      L 218 310
+      C 218 275 238 248 256 235
+      C 274 248 294 275 294 310
+      L 294 350
+      L 278 350
+      L 278 312
+      C 278 285 266 264 256 254
+      C 246 264 234 285 234 312
+      L 234 350
+      Z
+    " />
+
+    <!-- Signature Artisan Dot (from Atelier • Market wordmark) -->
+    <circle cx="256" cy="298" r="16" />
+  </g>
+</svg>

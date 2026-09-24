@@ -6,5 +6,6 @@ exports.getMe = (req, res) => {
     if (!req.session.isLoggedIn || !req.user) {
         return res.status(401).json({ message: 'Not authenticated' });
     }
-    res.json({ user: { _id: req.user._id, email: req.user.email } });
+    const { _id, name, email, role, avatar, phone, address, sellerProfile, favourites, defaultPaymentMethod, savedCard, createdAt } = req.user;
+    res.json({ user: { _id, name, email, role, avatar, phone, address, sellerProfile, favourites, defaultPaymentMethod: defaultPaymentMethod || 'card', savedCard: savedCard || null, createdAt } });
 };

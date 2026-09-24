@@ -1,16 +1,16 @@
 :root {
-  --color-najd: #18181b;
-  --color-plaster: #faf8f5;
-  --color-ink: #121212;
-  --color-gold-leaf: #c5a880;
-  --color-peacock: #2d4a43;
-  --color-oxblood: #7a282e;
-  --color-stone: #8a857d;
+  --color-najd: #18181b;           --color-najd-rgb: 24 24 27;
+  --color-plaster: #faf8f5;        --color-plaster-rgb: 250 248 245;
+  --color-ink: #121212;            --color-ink-rgb: 18 18 18;
+  --color-gold-leaf: #c5a880;      --color-gold-leaf-rgb: 197 168 128;
+  --color-peacock: #2d4a43;        --color-peacock-rgb: 45 74 67;
+  --color-oxblood: #7a282e;        --color-oxblood-rgb: 122 40 46;
+  --color-stone: #8a857d;          --color-stone-rgb: 138 133 125;
 
-  --color-silk: #f4efea;
-  --color-canvas: #ffffff;
-  --color-charcoal: #1c1c1e;
-  --color-sand: #eee9e0;
+  --color-silk: #f4efea;           --color-silk-rgb: 244 239 234;
+  --color-canvas: #ffffff;         --color-canvas-rgb: 255 255 255;
+  --color-charcoal: #1c1c1e;       --color-charcoal-rgb: 28 28 30;
+  --color-sand: #eee9e0;           --color-sand-rgb: 238 233 224;
 
   --hairline: rgba(197, 168, 128, 0.28);
   --hairline-subtle: rgba(18, 18, 18, 0.08);
@@ -39,21 +39,36 @@
 
   --focus-ring: 0 0 0 2px var(--color-gold-leaf);
   --focus-offset: 2px;
+
+  /* ── Semantic aliases ── */
+  --color-surface:      var(--color-canvas);
+  --color-surface-alt:  var(--color-silk);
+  --color-on-surface:   var(--color-ink);
+  --color-accent:       var(--color-gold-leaf);
+  --color-error:        var(--color-oxblood);
+  --color-success:      var(--color-peacock);
+  --color-text-muted:   var(--color-stone);
+
+  /* ── Category badge colours ── */
+  --badge-new:        var(--color-peacock);
+  --badge-bestseller: var(--color-gold-leaf);
+  --badge-limited:    var(--color-oxblood);
+  --badge-sale:       var(--color-oxblood);
 }
 
 .dark {
-  --color-najd: #faf8f5;
-  --color-plaster: #0e0e11;
-  --color-ink: #f5f4f0;
-  --color-gold-leaf: #d4af37;
-  --color-peacock: #4e8074;
-  --color-oxblood: #c45b63;
-  --color-stone: #9e9a93;
+  --color-najd: #faf8f5;           --color-najd-rgb: 250 248 245;
+  --color-plaster: #0e0e11;        --color-plaster-rgb: 14 14 17;
+  --color-ink: #f5f4f0;            --color-ink-rgb: 245 244 240;
+  --color-gold-leaf: #d4af37;      --color-gold-leaf-rgb: 212 175 55;
+  --color-peacock: #5ea897;        --color-peacock-rgb: 94 168 151;
+  --color-oxblood: #e07a82;        --color-oxblood-rgb: 224 122 130;
+  --color-stone: #b8b3ab;          --color-stone-rgb: 184 179 171;
 
-  --color-silk: #151518;
-  --color-canvas: #1b1b1f;
-  --color-charcoal: #26262c;
-  --color-sand: #202026;
+  --color-silk: #151518;           --color-silk-rgb: 21 21 24;
+  --color-canvas: #1b1b1f;         --color-canvas-rgb: 27 27 31;
+  --color-charcoal: #26262c;       --color-charcoal-rgb: 38 38 44;
+  --color-sand: #202026;           --color-sand-rgb: 32 32 38;
 
   --hairline: rgba(212, 175, 55, 0.25);
   --hairline-subtle: rgba(245, 244, 240, 0.1);
@@ -62,9 +77,20 @@
 [dir="rtl"] {
   --font-display: 'Amiri', 'Cormorant Garamond', serif;
   --font-sans: 'IBM Plex Sans Arabic', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  --text-step--1: 0.875rem;
+  --text-step-0: 1rem;
+  --text-step-1: 1.1875rem;
+  --text-step-2: 1.45rem;
+  --text-step-3: 2rem;
+  --text-step-4: 2.65rem;
+  --text-step-5: 4rem;
+
+  --leading-body: 1.75;
 }
 
 /* In Arabic typography, avoid breaking cursive character ligatures */
 [dir="rtl"] [class*="tracking-"] {
-  letter-spacing: 0.02em !important;
+  letter-spacing: 0.01em !important;
 }
+

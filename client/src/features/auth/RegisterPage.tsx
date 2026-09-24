@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FormLayout } from '../../components/FormLayout';
 import { Field } from '../../components/Field';
 import { Button } from '../../components/Button';
@@ -11,7 +11,21 @@ import { validationErrorsToMap } from './validationErrorsToMap';
 import { useI18n } from '../../lib/i18n';
 
 export function RegisterPage() {
-  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
+  const [searchParams] = useSearchParams();
+  const defaultRole = searchParams.get('role') === 'seller' ? 'seller' : 'customer';
+  const [form, setForm] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    role: 'customer' | 'seller';
+  }>({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: defaultRole,
+  });
   const [banner, setBanner] = useState<string>();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const register = useRegister();
@@ -19,7 +33,7 @@ export function RegisterPage() {
   const { notify } = useToast();
   const { t } = useI18n();
 
-  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) =>
+  const set = (k: 'name' | 'email' | 'password' | 'confirmPassword') => (e: ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const onSubmit = (e: FormEvent) => {
@@ -27,12 +41,12 @@ export function RegisterPage() {
     setBanner(undefined);
     setFieldErrors({});
     if (form.password !== form.confirmPassword) {
-      setFieldErrors({ confirmPassword: 'Passwords do not match' });
+      setFieldErrors({ confirmPassword: t('auth.passwordMismatch') });
       return;
     }
     register.mutate(form, {
       onSuccess: () => {
-        notify('Account created. Please log in.', 'success');
+        notify(t('auth.accountCreated'), 'success');
         navigate('/login');
       },
       onError: (err) => {
@@ -41,7 +55,7 @@ export function RegisterPage() {
           setFieldErrors(map);
           if (Object.keys(map).length === 0) setBanner(err.body.errorMessage);
         } else {
-          setBanner('Could not create the account. Try again.');
+          setBanner(t('auth.registerGenericError'));
         }
       },
     });
@@ -50,6 +64,7 @@ export function RegisterPage() {
   return (
     <FormLayout
       title={t('auth.registerTitle')}
+      subtitle={t('auth.registerSubtitle')}
       error={banner}
       onSubmit={onSubmit}
       footer={
@@ -65,9 +80,79 @@ export function RegisterPage() {
         </>
       }
     >
+      <fieldset className="flex flex-col gap-2">
+        <legend className="block font-sans text-[0.75rem] tracking-[0.14em] uppercase text-stone mb-1 font-medium">
+          {t('auth.roleLabel')}
+        </legend>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label={t('auth.roleLabel')}>
+          <label
+            htmlFor="role-customer"
+            className={`relative flex flex-col p-3.5 border rounded-sm cursor-pointer transition-all duration-200 select-none ${
+              form.role === 'customer'
+                ? 'border-gold-leaf bg-gold-leaf/5 shadow-[0_0_0_1px_rgba(197,168,128,0.3)]'
+                : 'border-hairline/70 hover:border-stone/60 bg-transparent'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-sans text-step--1 font-medium text-ink">
+                {t('auth.roleCustomer')}
+              </span>
+              <input
+                id="role-customer"
+                type="radio"
+                name="role"
+                value="customer"
+                checked={form.role === 'customer'}
+                onChange={() => setForm((f) => ({ ...f, role: 'customer' }))}
+                className="w-4 h-4 accent-gold-leaf cursor-pointer"
+              />
+            </div>
+            <p className="font-sans text-[0.75rem] text-stone leading-relaxed">
+              {t('auth.roleCustomerDesc')}
+            </p>
+          </label>
+
+          <label
+            htmlFor="role-seller"
+            className={`relative flex flex-col p-3.5 border rounded-sm cursor-pointer transition-all duration-200 select-none ${
+              form.role === 'seller'
+                ? 'border-gold-leaf bg-gold-leaf/5 shadow-[0_0_0_1px_rgba(197,168,128,0.3)]'
+                : 'border-hairline/70 hover:border-stone/60 bg-transparent'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-sans text-step--1 font-medium text-ink">
+                {t('auth.roleSeller')}
+              </span>
+              <input
+                id="role-seller"
+                type="radio"
+                name="role"
+                value="seller"
+                checked={form.role === 'seller'}
+                onChange={() => setForm((f) => ({ ...f, role: 'seller' }))}
+                className="w-4 h-4 accent-gold-leaf cursor-pointer"
+              />
+            </div>
+            <p className="font-sans text-[0.75rem] text-stone leading-relaxed">
+              {t('auth.roleSellerDesc')}
+            </p>
+          </label>
+        </div>
+      </fieldset>
+
+      <Field
+        label={t('auth.nameLabel')}
+        name="name"
+        type="text"
+        autoComplete="name"
+        value={form.name}
+        onChange={set('name')}
+        placeholder={t('auth.namePlaceholder')}
+        error={fieldErrors.name}
+      />
       <Field
         label={t('auth.email')}
-        aria-label="Email"
         name="email"
         type="email"
         autoComplete="email"
@@ -78,7 +163,6 @@ export function RegisterPage() {
       />
       <Field
         label={t('auth.password')}
-        aria-label="Password"
         name="password"
         type="password"
         autoComplete="new-password"
@@ -86,11 +170,10 @@ export function RegisterPage() {
         value={form.password}
         onChange={set('password')}
         error={fieldErrors.password}
-        hint="At least 8 characters, with upper, lower, number, and symbol."
+        hint={t('auth.passwordHint')}
       />
       <Field
         label={t('auth.confirmPassword')}
-        aria-label="Confirm password"
         name="confirmPassword"
         type="password"
         autoComplete="new-password"

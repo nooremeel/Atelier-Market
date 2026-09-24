@@ -12,22 +12,31 @@ type Props = {
 
 export function Drawer({ open, onClose, side = 'end', title, children }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    if (!open) return;
+    if (!panelRef.current?.contains(document.activeElement)) {
+      panelRef.current?.focus();
+    }
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     document.addEventListener('keydown', onKey);
-    panelRef.current?.focus();
     return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-sm transition-opacity"
+      className="fixed inset-0 z-50 bg-black/60 dark:bg-black/75 backdrop-blur-sm transition-opacity"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) onCloseRef.current();
       }}
     >
       <div
@@ -37,7 +46,7 @@ export function Drawer({ open, onClose, side = 'end', title, children }: Props) 
         aria-modal="true"
         aria-label={title}
         className={cn(
-          'absolute inset-y-0 h-full w-80 max-w-[85vw] bg-white p-8 shadow-drawer transition-transform',
+          'absolute inset-y-0 h-full w-80 max-w-[85vw] bg-canvas text-ink p-8 shadow-drawer transition-transform',
           side === 'end' ? 'end-0 border-s border-hairline' : 'start-0 border-e border-hairline',
         )}
       >

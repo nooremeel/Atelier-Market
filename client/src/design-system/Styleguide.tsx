@@ -54,6 +54,7 @@ export function Styleguide() {
   const { notify } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [qty, setQty] = useState(1);
+  const [page, setPage] = useState(2);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 flex flex-col gap-16">
@@ -153,7 +154,7 @@ export function Styleguide() {
               { label: 'Amber Mist' },
             ]}
           />
-          <Pagination currentPage={2} lastPage={5} onNavigate={() => {}} />
+          <Pagination currentPage={page} lastPage={5} onNavigate={setPage} />
           <EmptyState
             title="No orders yet"
             description="When you place an order it will show up here."

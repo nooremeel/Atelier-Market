@@ -43,10 +43,11 @@ router.post('/signup', [
                 throw new Error('Password does not match');
             }
             return true
-        }).trim()
-
-
-
+        }).trim(),
+    body('role')
+        .optional()
+        .isIn(['customer', 'seller'])
+        .withMessage('Role must be either customer or seller')
 ], authController.postSignup);
 
 router.post('/logout', authController.postLogout);

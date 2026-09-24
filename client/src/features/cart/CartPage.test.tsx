@@ -37,3 +37,37 @@ it('shows the empty state', async () => {
   render(wrap(<CartPage />));
   expect(await screen.findByText(/your cart is empty/i)).toBeInTheDocument();
 });
+
+it('renders distinct variants of the same product with variant pills and prices', async () => {
+  server.use(http.get('/api/cart', () => HttpResponse.json({
+    items: [
+      {
+        _id: 'c1',
+        product: { _id: 'p1', title: 'Artisanal Ceramic Vessel', price: 185, description: 'd', imageUrl: 'i', userId: 'u' },
+        quantity: 1,
+        variantId: 'v1',
+        variant: { _id: 'v1', name: 'Studio Edition (250 ml)', sku: 'ACV-250', price: 185, stock: 8 },
+        unitPrice: 185,
+      },
+      {
+        _id: 'c2',
+        product: { _id: 'p1', title: 'Artisanal Ceramic Vessel', price: 185, description: 'd', imageUrl: 'i', userId: 'u' },
+        quantity: 1,
+        variantId: 'v2',
+        variant: { _id: 'v2', name: 'Grand Atelier (500 ml)', sku: 'ACV-500', price: 265, stock: 5 },
+        unitPrice: 265,
+      },
+    ],
+    totalItems: 2,
+    totalPrice: 450,
+  })));
+  render(wrap(<CartPage />));
+  expect(await screen.findByText('Studio Edition (250 ml)')).toBeInTheDocument();
+  expect(screen.getByText('Grand Atelier (500 ml)')).toBeInTheDocument();
+  expect(screen.getByText('ACV-250')).toBeInTheDocument();
+  expect(screen.getByText('ACV-500')).toBeInTheDocument();
+  expect(screen.getByText('$185.00')).toBeInTheDocument();
+  expect(screen.getByText('$265.00')).toBeInTheDocument();
+  expect(screen.getAllByText('$450.00').length).toBeGreaterThan(0);
+});
+

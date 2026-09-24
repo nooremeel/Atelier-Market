@@ -13,7 +13,7 @@ export function Select({ label, name, error, options, className, id, ...rest }: 
   const selectId = id ?? `${name}-${auto}`;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={selectId} className="font-sans text-[0.6875rem] tracking-[0.16em] uppercase text-stone font-medium">{label}</label>
+      <label htmlFor={selectId} className="font-sans text-[0.6875rem] tracking-[0.16em] uppercase text-stone dark:text-stone/95 font-medium">{label}</label>
       <select
         id={selectId}
         name={name}
@@ -27,7 +27,7 @@ export function Select({ label, name, error, options, className, id, ...rest }: 
         )}
         {...rest}
       >
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        {options.map((o) => <option key={o.value} value={o.value} className="bg-canvas text-ink">{o.label}</option>)}
       </select>
       {error && <span role="alert" className="text-[0.75rem] text-oxblood">{error}</span>}
     </div>

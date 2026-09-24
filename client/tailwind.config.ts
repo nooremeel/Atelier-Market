@@ -6,17 +6,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        najd: 'var(--color-najd)',
-        plaster: 'var(--color-plaster)',
-        ink: 'var(--color-ink)',
-        'gold-leaf': 'var(--color-gold-leaf)',
-        peacock: 'var(--color-peacock)',
-        oxblood: 'var(--color-oxblood)',
-        stone: 'var(--color-stone)',
-        silk: 'var(--color-silk)',
-        charcoal: 'var(--color-charcoal)',
-        canvas: 'var(--color-canvas)',
-        sand: 'var(--color-sand)',
+        najd:       'rgb(var(--color-najd-rgb) / <alpha-value>)',
+        plaster:    'rgb(var(--color-plaster-rgb) / <alpha-value>)',
+        ink:        'rgb(var(--color-ink-rgb) / <alpha-value>)',
+        'gold-leaf':'rgb(var(--color-gold-leaf-rgb) / <alpha-value>)',
+        peacock:    'rgb(var(--color-peacock-rgb) / <alpha-value>)',
+        oxblood:    'rgb(var(--color-oxblood-rgb) / <alpha-value>)',
+        stone:      'rgb(var(--color-stone-rgb) / <alpha-value>)',
+        silk:       'rgb(var(--color-silk-rgb) / <alpha-value>)',
+        charcoal:   'rgb(var(--color-charcoal-rgb) / <alpha-value>)',
+        canvas:     'rgb(var(--color-canvas-rgb) / <alpha-value>)',
+        sand:       'rgb(var(--color-sand-rgb) / <alpha-value>)',
       },
       fontFamily: {
         display: ['"Cormorant Garamond"', 'Amiri', 'Marcellus', 'Fraunces', 'serif'],

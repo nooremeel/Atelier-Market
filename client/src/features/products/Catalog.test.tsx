@@ -54,3 +54,25 @@ it('sends q to the API when searching', async () => {
   await new Promise((r) => setTimeout(r, 350));
   expect(lastUrl).toContain('q=oud');
 });
+
+it('updates sort immediately and displays active sort indicator', async () => {
+  let lastUrl = '';
+  server.use(http.get('/api/products', ({ request }) => {
+    lastUrl = request.url;
+    return HttpResponse.json(page1);
+  }));
+  render(wrap(<Catalog />));
+  await screen.findByText('Item 0');
+
+  // Select 'Price: low to high'
+  await userEvent.selectOptions(screen.getByLabelText(/sort by/i), 'price_asc');
+  expect(lastUrl).toContain('sort=price_asc');
+
+  // Verify active filter badge appears
+  const activeSortBadge = await screen.findByRole('button', { name: /Sort: Price: low to high/i });
+  expect(activeSortBadge).toBeInTheDocument();
+
+  // Click active sort badge to reset
+  await userEvent.click(activeSortBadge);
+  expect(lastUrl).toContain('sort=newest');
+});

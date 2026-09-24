@@ -33,7 +33,7 @@ export function apiGet<T>(path: string): Promise<T> {
 
 export async function apiSend<T>(
   path: string,
-  method: 'POST' | 'PUT' | 'DELETE',
+  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   body?: unknown,
   _retried = false,
 ): Promise<T> {
@@ -56,7 +56,7 @@ export async function apiSend<T>(
 
 export async function apiUpload<T>(
   path: string,
-  method: 'POST' | 'PUT',
+  method: 'POST' | 'PUT' | 'PATCH',
   form: FormData,
   _retried = false,
 ): Promise<T> {
@@ -76,3 +76,9 @@ export async function apiUpload<T>(
   }
   return handle(res);
 }
+
+// ─── Convenience named exports ───────────────────────────────────────────────
+export const apiPost   = <T = any>(path: string, body?: unknown) => apiSend<T>(path, 'POST', body);
+export const apiPut    = <T = any>(path: string, body?: unknown) => apiSend<T>(path, 'PUT', body);
+export const apiPatch  = <T = any>(path: string, body?: unknown) => apiSend<T>(path, 'PATCH', body);
+export const apiDelete = <T = any>(path: string)                  => apiSend<T>(path, 'DELETE');

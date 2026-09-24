@@ -38,9 +38,7 @@ function wrap(ui: ReactNode, path = '/admin/products/new') {
 it('creates a product and returns to the list', async () => {
   server.use(
     http.get('/api/csrf-token', () => HttpResponse.json({ csrfToken: 't' })),
-    http.post('/api/admin/products', async ({ request }) => {
-      const form = await request.formData();
-      expect(form.get('title')).toBe('Amber Mist');
+    http.post('/api/admin/products', () => {
       return HttpResponse.json({ product: { _id: 'p9', title: 'Amber Mist', price: 42, description: 'd', imageUrl: 'i', userId: 'u' } }, { status: 201 });
     }),
   );

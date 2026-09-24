@@ -7,7 +7,6 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
-    scroll-behavior: smooth;
   }
 
   ::selection {
@@ -50,6 +49,31 @@
   }
 
   img { max-width: 100%; height: auto; display: block; }
+
+  /* RTL Form Controls & Input Direction */
+  [dir="rtl"] input:not([type="email"]):not([type="password"]):not([type="url"]):not([type="tel"]):not([type="number"]),
+  [dir="rtl"] textarea,
+  [dir="rtl"] select {
+    direction: rtl;
+    text-align: right;
+  }
+
+  [dir="rtl"] input[type="email"],
+  [dir="rtl"] input[type="password"],
+  [dir="rtl"] input[type="url"],
+  [dir="rtl"] input[type="tel"],
+  [dir="rtl"] input[type="number"] {
+    direction: ltr;
+    text-align: left;
+  }
+
+  [dir="rtl"] input[type="email"]::placeholder,
+  [dir="rtl"] input[type="password"]::placeholder,
+  [dir="rtl"] input[type="url"]::placeholder,
+  [dir="rtl"] input[type="tel"]::placeholder {
+    direction: rtl;
+    text-align: right;
+  }
 }
 
 @layer utilities {
@@ -72,3 +96,67 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ─── Leaflet Map Overrides — Atelier Noir Luxury Styling ─────────────── */
+.leaflet-container {
+  font-family: var(--font-sans) !important;
+  background-color: var(--color-canvas) !important;
+  z-index: 10;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: var(--color-canvas) !important;
+  color: var(--color-ink) !important;
+  border-radius: 2px !important;
+  border: 1px solid var(--hairline) !important;
+  box-shadow: 0 8px 32px rgba(18, 18, 18, 0.16) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: inherit !important;
+}
+
+.leaflet-popup-tip {
+  background-color: var(--color-canvas) !important;
+  border: 1px solid var(--hairline) !important;
+  box-shadow: none !important;
+}
+
+.leaflet-popup-close-button {
+  color: var(--color-stone) !important;
+  top: 8px !important;
+  right: 8px !important;
+  font-size: 16px !important;
+  transition: color 0.2s ease !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: var(--color-ink) !important;
+}
+
+.leaflet-bar {
+  border-radius: 2px !important;
+  border: 1px solid var(--hairline) !important;
+  box-shadow: 0 4px 16px rgba(18, 18, 18, 0.08) !important;
+  overflow: hidden;
+}
+
+.leaflet-bar a {
+  background-color: var(--color-canvas) !important;
+  color: var(--color-ink) !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: var(--color-silk) !important;
+  color: var(--color-gold-leaf) !important;
+}
+
+.leaflet-bar a:last-child {
+  border-bottom: none !important;
+}
+

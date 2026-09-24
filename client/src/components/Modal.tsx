@@ -6,23 +6,32 @@ type Props = { open: boolean; onClose: () => void; title: string; children: Reac
 
 export function Modal({ open, onClose, title, children }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    if (!open) return;
+    // Only focus the panel on initial open if focus is not already inside an element in the panel
+    if (!panelRef.current?.contains(document.activeElement)) {
+      panelRef.current?.focus();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     document.addEventListener('keydown', onKey);
-    panelRef.current?.focus();
     return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-sm p-4 transition-all"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/75 backdrop-blur-sm p-4 transition-all"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) onCloseRef.current();
       }}
     >
       <div
@@ -31,7 +40,9 @@ export function Modal({ open, onClose, title, children }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={cn('u-measure w-full border border-hairline bg-white p-8 shadow-luxury rounded-sm max-w-lg animate-in fade-in zoom-in-95 duration-200')}
+        className={cn(
+          'u-measure w-full border border-hairline bg-canvas text-ink p-8 shadow-luxury rounded-sm max-w-lg animate-in fade-in zoom-in-95 duration-200'
+        )}
       >
         <h2 className="font-display text-step-3 text-ink mb-4 font-normal">{title}</h2>
         {children}

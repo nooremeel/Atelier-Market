@@ -38,6 +38,42 @@ describe('auth API', () => {
     expect(res.body.errorMessage).toBeTruthy();
   });
 
+  it('signs up as a seller with role="seller" and initializes sellerProfile', async () => {
+    const a = agent();
+    const csrf = await csrfFor(a);
+    const creds = { email: 'seller@user.com', password: 'Str0ng!pass', confirmPassword: 'Str0ng!pass', role: 'seller' };
+
+    const res = await a.post('/api/auth/signup').set('csrf-token', csrf).send(creds);
+    expect(res.status).toBe(201);
+    expect(res.body.user.email).toBe('seller@user.com');
+    expect(res.body.user.role).toBe('seller');
+    expect(res.body.user.sellerProfile).toBeDefined();
+
+    // Verify session login returns seller role
+    const loginRes = await a.post('/api/auth/login').set('csrf-token', csrf).send({ email: creds.email, password: creds.password });
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body.user.role).toBe('seller');
+
+    // Verify /api/auth/me returns seller role and profile
+    const meRes = await a.get('/api/auth/me');
+    expect(meRes.status).toBe(200);
+    expect(meRes.body.user.role).toBe('seller');
+    expect(meRes.body.user.sellerProfile).toBeDefined();
+  });
+
+  it('rejects signup with forbidden role="admin" with 422 validation error', async () => {
+    const a = agent();
+    const csrf = await csrfFor(a);
+    const res = await a.post('/api/auth/signup').set('csrf-token', csrf).send({
+      email: 'hacker@user.com',
+      password: 'Str0ng!pass',
+      confirmPassword: 'Str0ng!pass',
+      role: 'admin',
+    });
+    expect(res.status).toBe(422);
+    expect(res.body.errorMessage).toMatch(/role/i);
+  });
+
   it('rejects bad login with 422', async () => {
     const a = agent();
     const csrf = await csrfFor(a);

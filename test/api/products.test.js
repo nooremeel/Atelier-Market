@@ -20,13 +20,13 @@ async function seed(n = 6) {
 }
 
 describe('GET /api/products', () => {
-  it('paginates with 4 per page', async () => {
-    await seed(6);
+  it('paginates with 6 per page', async () => {
+    await seed(8);
     const res = await request(app).get('/api/products?page=1');
     expect(res.status).toBe(200);
-    expect(res.body.products).toHaveLength(4);
+    expect(res.body.products).toHaveLength(6);
     expect(res.body.pagination).toMatchObject({
-      currentPage: 1, lastPage: 2, hasNextPage: true, hasPreviousPage: false, totalItems: 6,
+      currentPage: 1, lastPage: 2, hasNextPage: true, hasPreviousPage: false, totalItems: 8,
     });
   });
 

@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, screen } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
 import { beforeEach } from 'vitest';
@@ -27,4 +27,5 @@ it('posts to /api/cart and caches the returned cart', async () => {
   const { result } = renderHook(() => useAddToCart(), { wrapper });
   result.current.mutate('p1');
   await waitFor(() => expect(queryClient.getQueryData(['cart'])).toMatchObject({ totalItems: 1 }));
+  expect(screen.getByText('Added to shopping bag')).toBeInTheDocument();
 });

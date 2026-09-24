@@ -21,43 +21,85 @@ const mongodbStore = require('connect-mongodb-session')(session);
 
 
 
-const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.etoo1jt.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?appName=shop`;
+const isTest = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST);
+
+const MONGODB_URI = process.env.MONGODB_URI || (
+    process.env.MONGO_USER && process.env.MONGO_PASSWORD && process.env.MONGO_DEFAULT_DATABASE
+        ? `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.etoo1jt.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?appName=shop`
+        : ''
+);
 
 const app = express();
+const connectToDatabase = require('./util/db');
 
-// Only build the network-backed session store when run as the entrypoint;
-// on bare require() (tests) express-session falls back to its MemoryStore.
-const store = require.main === module
-    ? new mongodbStore({ uri: MONGODB_URI, collection: 'sessions' })
-    : undefined;
+// Trust reverse proxy (Vercel, Nginx, etc.) for secure cookie detection and client IP
+app.set('trust proxy', 1);
+
+// Serverless DB connection middleware ensuring DB is ready before request processing
+app.use(async (req, res, next) => {
+    if (isTest || mongoose.connection.readyState >= 1) {
+        return next();
+    }
+    try {
+        await connectToDatabase();
+        next();
+    } catch (err) {
+        console.error('[DB Connection Middleware Error]:', err);
+        return res.status(500).json({
+            message: 'Database connection failed',
+            error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+        });
+    }
+});
+
+// Network-backed session store in production / outside tests;
+// Express-session falls back to MemoryStore during tests
+let store;
+if (!isTest && MONGODB_URI) {
+    store = new mongodbStore({
+        uri: MONGODB_URI,
+        collection: 'sessions'
+    });
+    store.on('error', (err) => {
+        console.error('[Session Store Error]:', err);
+    });
+}
 const csrfProtection = csrf();
 
-
+const os = require('os');
+const uploadDir = process.env.VERCEL ? os.tmpdir() : 'images';
 
 const fileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'images');
+        cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
         cb(null, new Date().toISOString().replace(/:/g, '-') + '-' + file.originalname);
     }
 });
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg' || file.mimetype === 'image/webp') {
         cb(null, true);
     } else {
         cb(null, false);
     }
-
-
 };
-const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
 
 app.use(helmet({
     contentSecurityPolicy: false
 }));
 app.use(compression());
-app.use(morgan('combined', { stream: accessLogStream }));
+
+if (process.env.VERCEL) {
+    app.use(morgan('combined'));
+} else {
+    try {
+        const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
+        app.use(morgan('combined', { stream: accessLogStream }));
+    } catch {
+        app.use(morgan('combined'));
+    }
+}
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -67,7 +109,18 @@ app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-app.use(session({ secret: 'this is a secret', resave: false, saveUninitialized: false, store: store }));
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'this is a secret',
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+    cookie: {
+        httpOnly: true,
+        secure: 'auto',
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+    }
+}));
 
 
 app.use((req, res, next) => {
@@ -114,9 +167,12 @@ app.use((error, req, res, next) => {
 });
 
 if (require.main === module) {
-    mongoose.connect(MONGODB_URI)
-        .then(() => app.listen(process.env.PORT || 3000))
-        .catch(err => console.log(err));
+    connectToDatabase()
+        .then(() => {
+            const port = process.env.PORT || 3000;
+            app.listen(port, () => console.log(`Server listening on port ${port}`));
+        })
+        .catch(err => console.error('[Bootstrap Error]:', err));
 }
 
 module.exports = app;
