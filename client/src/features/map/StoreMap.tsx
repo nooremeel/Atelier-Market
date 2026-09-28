@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { useTheme } from '../../lib/theme';
 import { useI18n } from '../../lib/i18n';
 import { Link } from '../../components/Link';
+import { cn } from '../../lib/cn';
 
 export type StoreMapMarker = {
   id: string;
@@ -122,7 +123,7 @@ export function StoreMap({
   center,
   zoom = 5,
   className = '',
-  height = '420px',
+  height,
   interactive = true,
   showControls = true,
 }: StoreMapProps) {
@@ -153,19 +154,21 @@ export function StoreMap({
     return 5;
   }, [zoom, validMarkers.length]);
 
-  // CartoDB Tile URL based on theme
-  const tileUrl = isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  // OpenStreetMap Tile Layer (100% free, open-source, no API key required)
+  const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   const attribution =
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+    '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
 
   return (
     <div
       data-testid="store-map-container"
-      className={`relative overflow-hidden rounded-sm border border-hairline/80 shadow-luxury ${className}`}
-      style={{ height }}
+      className={cn(
+        'relative overflow-hidden rounded-sm border border-hairline/80 shadow-luxury',
+        !height && 'h-[300px] sm:h-[400px] lg:h-[580px]',
+        className,
+      )}
+      style={height ? { height } : undefined}
     >
       <MapContainer
         center={initialCenter}
@@ -177,11 +180,12 @@ export function StoreMap({
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
-          key={isDark ? 'carto-dark' : 'carto-light'}
+          key={isDark ? 'osm-dark' : 'osm-light'}
           url={tileUrl}
           attribution={attribution}
-          subdomains={['a', 'b', 'c', 'd']}
+          subdomains={['a', 'b', 'c']}
           maxZoom={19}
+          className={isDark ? 'map-tiles-dark' : 'map-tiles-light'}
         />
 
         <MapFlyController

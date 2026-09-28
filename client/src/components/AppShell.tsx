@@ -11,6 +11,7 @@ import { resetCsrfToken } from '../lib/csrf';
 import { queryClient } from '../lib/queryClient';
 import { CartDrawerProvider } from '../features/cart/CartDrawerContext';
 import { CartDrawer } from '../features/cart/CartDrawer';
+import { MobileBottomNav } from './MobileBottomNav';
 import type { Cart } from '../types';
 
 function ScrollToTop() {
@@ -69,11 +70,16 @@ export function AppShell() {
             favouritesCount={favs.data?.favourites.length ?? user?.favourites?.length ?? 0}
             onLogout={onLogout}
           />
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6">
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6 pb-20 md:pb-0">
             <Outlet />
           </main>
           <SiteFooter />
           <CartDrawer />
+          <MobileBottomNav
+            cartCount={cart.data?.totalItems ?? 0}
+            userRole={user?.role}
+            isLoggedIn={!!user}
+          />
         </div>
       </CartDrawerProvider>
     </ToastProvider>

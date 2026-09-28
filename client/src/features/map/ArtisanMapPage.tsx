@@ -178,7 +178,7 @@ export function ArtisanMapPage() {
       ) : (
         <div className="grid gap-8 lg:grid-cols-12 items-start">
           {/* Atelier Cards Rail (Left on LTR, Right on RTL) */}
-          <div className="lg:col-span-5 flex flex-col gap-4 order-2 lg:order-1 max-h-[600px] overflow-y-auto pe-1">
+          <div id="artisan-directory-cards" className="lg:col-span-5 flex flex-col gap-4 order-2 lg:order-1 lg:max-h-[600px] lg:overflow-y-auto pe-1">
             {filteredSellers.length === 0 ? (
               <EmptyState
                 title={isArabic ? 'لا توجد ورش في هذه المنطقة' : 'No ateliers in this region'}
@@ -241,6 +241,10 @@ export function ArtisanMapPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedSellerId(seller._id);
+                          if (window.innerWidth < 1024) {
+                            const mapEl = document.getElementById('artisan-map-section');
+                            if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }
                         }}
                         className="font-sans text-[0.6875rem] tracking-[0.16em] uppercase font-medium text-stone hover:text-gold-leaf transition-colors inline-flex items-center gap-1"
                       >
@@ -266,13 +270,31 @@ export function ArtisanMapPage() {
           </div>
 
           {/* Interactive Map (Right on LTR, Left on RTL) */}
-          <div className="lg:col-span-7 order-1 lg:order-2 sticky top-24">
+          <div id="artisan-map-section" className="lg:col-span-7 order-1 lg:order-2 lg:sticky lg:top-24">
+            {/* Mobile Header / Quick Jump */}
+            <div className="flex items-center justify-between lg:hidden mb-2 px-1">
+              <span className="flex items-center gap-1.5 text-[0.6875rem] text-stone font-sans uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-leaf" />
+                <span>{isArabic ? 'الخريطة التفاعلية' : 'Interactive Map'}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById('artisan-directory-cards');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center gap-1 text-[0.6875rem] rtl:text-[0.75rem] font-sans font-medium text-gold-leaf hover:underline"
+              >
+                <span>{isArabic ? `دليل الورش (${filteredSellers.length})` : `Browse Studios (${filteredSellers.length})`}</span>
+                <span aria-hidden="true">↓</span>
+              </button>
+            </div>
+
             <StoreMap
               markers={markers}
               selectedId={selectedSellerId}
               onSelectMarker={(marker) => setSelectedSellerId(marker.id)}
-              height="580px"
-              className="w-full"
+              className="w-full h-[300px] sm:h-[400px] lg:h-[580px]"
             />
 
             {/* Micro Caption */}

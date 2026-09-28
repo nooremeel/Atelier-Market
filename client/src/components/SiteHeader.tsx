@@ -73,6 +73,16 @@ function MoonIcon() {
   );
 }
 
+function HamburgerIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="17" x2="20" y2="17" />
+    </svg>
+  );
+}
+
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
     'font-sans text-[0.75rem] rtl:text-[0.875rem] tracking-[0.14em] rtl:tracking-normal uppercase font-medium transition-colors py-1 relative whitespace-nowrap',
@@ -134,28 +144,30 @@ export function SiteHeader({ user, cartCount, favouritesCount = 0, onLogout }: P
         </div>
       )}
 
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-hairline/50">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 border-b border-hairline/50">
         {/* Start Cluster: Brand & Primary Editorial Navigation */}
-        <div className="flex items-center gap-3.5 md:gap-5 lg:gap-6 min-w-0">
-          <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-5 lg:gap-6 min-w-0 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
-              className="font-sans text-[0.75rem] rtl:text-[0.875rem] tracking-[0.16em] rtl:tracking-normal uppercase text-ink px-2 py-1 border border-hairline/60 rounded-sm hover:border-gold-leaf transition-colors md:hidden"
+              id="mobile-menu-trigger"
+              className="inline-flex items-center justify-center font-sans text-[0.75rem] rtl:text-[0.875rem] tracking-[0.16em] rtl:tracking-normal uppercase text-ink p-1.5 sm:px-2 sm:py-1 border border-hairline/60 rounded-sm hover:border-gold-leaf hover:text-gold-leaf transition-colors md:hidden shrink-0"
               onClick={() => setDrawerOpen(true)}
               aria-label={t('nav.menu')}
             >
-              {t('nav.menu')}
+              <HamburgerIcon />
+              <span className="hidden sm:inline">{t('nav.menu')}</span>
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <NavLink
                 to={isAdminMode ? "/admin/dashboard" : "/"}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5 sm:gap-2 shrink-0"
                 aria-label="Atelier Noir Home"
               >
                 <Wordmark withBadge />
                 {isAdminMode && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[0.625rem] rtl:text-[0.6875rem] tracking-[0.16em] rtl:tracking-normal uppercase font-mono font-semibold bg-gold-leaf/15 text-gold-leaf border border-gold-leaf/40">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[0.5625rem] sm:text-[0.625rem] rtl:text-[0.6875rem] tracking-[0.14em] uppercase font-mono font-semibold bg-gold-leaf/15 text-gold-leaf border border-gold-leaf/40 shrink-0 whitespace-nowrap">
                     {locale === 'ar' ? 'الإدارة' : 'Admin'}
                   </span>
                 )}
@@ -273,7 +285,7 @@ export function SiteHeader({ user, cartCount, favouritesCount = 0, onLogout }: P
                   openCartDrawer();
                 }
               }}
-              className="hidden sm:inline-flex items-center gap-1.5 p-1.5 text-stone hover:text-ink hover:text-gold-leaf transition-colors rounded-sm"
+              className="inline-flex items-center gap-1.5 p-1.5 text-stone hover:text-ink hover:text-gold-leaf transition-colors rounded-sm"
               aria-label={t('nav.itemsCount', { count: cartCount })}
               title={t('nav.cart')}
             >
@@ -430,34 +442,17 @@ export function SiteHeader({ user, cartCount, favouritesCount = 0, onLogout }: P
             </button>
           </div>
 
-          {/* Mobile controls */}
-          <div className="flex items-center gap-1.5 md:hidden">
-            <button
-              type="button"
-              id="header-search-btn-mobile"
-              onClick={() => setSearchOpen(true)}
-              className="p-1.5 rounded-sm border border-hairline/60 text-stone hover:text-ink hover:border-gold-leaf transition-all inline-flex items-center justify-center"
-              aria-label={t('search.label')}
-            >
-              <SearchNavIcon />
-            </button>
-            <button
-              type="button"
-              onClick={toggleLocale}
-              className="text-[0.6875rem] rtl:text-[0.75rem] font-sans font-medium px-2 py-1 rounded-sm border border-hairline/60 text-stone hover:text-ink transition-all uppercase"
-              aria-label={t('nav.langToggle')}
-            >
-              {locale === 'en' ? 'العربية' : 'EN'}
-            </button>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-1.5 rounded-sm border border-hairline/60 text-stone hover:text-ink transition-all inline-flex items-center justify-center"
-              aria-label={isDark ? t('nav.themeLight') : t('nav.themeDark')}
-            >
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-          </div>
+          {/* Mobile Search Button */}
+          <button
+            type="button"
+            id="header-search-btn-mobile"
+            onClick={() => setSearchOpen(true)}
+            className="p-1.5 rounded-sm border border-hairline/60 text-stone hover:text-ink hover:border-gold-leaf transition-all inline-flex items-center justify-center sm:hidden shrink-0"
+            aria-label={t('search.label')}
+            title={t('search.label')}
+          >
+            <SearchNavIcon />
+          </button>
         </div>
       </div>
 

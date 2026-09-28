@@ -10,7 +10,7 @@ const ToastContext = createContext<Ctx | null>(null);
 
 export function useToast(): Ctx {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used inside ToastProvider');
+  if (!ctx) return { notify: () => {} };
   return ctx;
 }
 

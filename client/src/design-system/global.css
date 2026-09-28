@@ -160,3 +160,12 @@
   border-bottom: none !important;
 }
 
+/* ─── OpenStreetMap Luxury Tile Filters (No API Key Required) ────────── */
+.map-tiles-dark {
+  filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(95%) grayscale(20%);
+}
+
+.map-tiles-light {
+  filter: contrast(102%) brightness(98%) saturate(90%);
+}
+
