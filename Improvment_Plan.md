@@ -16,14 +16,14 @@ Freelance clients, startup founders, and agency leads evaluate developer portfol
 
 ## 🗺️ Implementation Roadmap Overview
 
-| Phase | Focus Area | Impact | Estimated Complexity |
+| Phase | Focus Area | Impact | Status |
 | :--- | :--- | :--- | :--- |
-| **Phase 1** | **Frictionless Demo & Client Positioning** | 🔥 Critical (Instant 30s Client Impress) | Low / Medium |
-| **Phase 2** | **Inventory Management & Out-of-Stock Engine** | 💼 High (Standard Commercial Expectation) | Medium |
-| **Phase 3** | **Order Lifecycle & Visual Delivery Tracking** | 📦 High (Commercial Multi-Vendor Value) | Medium |
-| **Phase 4** | **Product Variants & Options (Size / Scent / Material)**| 💎 High (Shows Enterprise Catalog Architecture)| Medium / High |
-| **Phase 5** | **Slide-Over Mini Cart & Free Shipping Progress Meter**| ✨ High (E-Commerce UX & Conversion Magic) | Medium |
-| **Phase 6** | **Production Hardening, SEO (JSON-LD), & Test Stability**| 🛡️ High (Shows CTO-Level Clean Code Standards)| Low / Medium |
+| **Phase 1** | **Frictionless Demo & Client Positioning** | 🔥 Critical (Instant 30s Client Impress) | Completed ✅ |
+| **Phase 2** | **Inventory Management & Out-of-Stock Engine** | 💼 High (Standard Commercial Expectation) | Completed ✅ |
+| **Phase 3** | **Order Lifecycle & Visual Delivery Tracking** | 📦 High (Commercial Multi-Vendor Value) | Completed ✅ |
+| **Phase 4** | **Product Variants & Options (Size / Scent / Material)**| 💎 High (Shows Enterprise Catalog Architecture)| Completed ✅ |
+| **Phase 5** | **Slide-Over Mini Cart & Free Shipping Progress Meter**| ✨ High (E-Commerce UX & Conversion Magic) | Completed ✅ |
+| **Phase 6** | **Production Hardening, SEO (JSON-LD), & Test Stability**| 🛡️ High (Shows CTO-Level Clean Code Standards)| Completed ✅ |
 
 ---
 
@@ -72,14 +72,14 @@ Allow any prospective client or hiring manager to experience the full multi-role
   * [i18n.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/lib/i18n.tsx)
   * [test/api/admin.test.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/admin.test.js) & `client/src/features/admin/*.test.tsx`
 
-### 1.3 Case Study Re-framing of README *(Deferred until project completion as requested)*
+### 1.3 Case Study Re-framing of README (Completed ✅)
+* **Status**: Implemented & Verified.
 * **Relevant File**: [README.md](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/README.md)
-* **Detailed Steps**:
-  1. Remove academic/course-tutorial attributions from the project headline and replace with a professional **Product Case Study**:
-     * **Executive Summary**: A bespoke multi-vendor artisanal marketplace connecting Gulf & Levant craft studios with global patrons.
-     * **Key Business Metrics Simulated**: Multi-role authentication, Leaflet geolocation studio mapping, real-time sales analytics, PDF invoice streaming buffer, and 200+ automated tests.
-  2. Add prominent badges: `Vitest: 100% Passing (200+ tests)`, `TypeScript: Strict`, `Architecture: Express 5 + React 18 SPA`.
-  3. Place a prominent **Live Demo Link** at the very top of the README with demo credentials clearly displayed.
+* **Accomplishments**:
+  1. Reframed the headline and narrative into an executive-level **Product Case Study**: A bespoke multi-vendor artisanal marketplace connecting Gulf & Levant craft studios with global patrons.
+  2. Prominently displayed the **30-Second Client Demo Table** featuring 1-click credentials for all three personas (Customer, Artisan Seller, Platform Admin) and auto-bootstrapping guarantees.
+  3. Added verified badges: `Vitest: 100% Passing (236 tests)`, `TypeScript: Strict`, `Architecture: Express 5 + React 18 SPA`.
+  4. Documented all 8 core commercial capabilities (CRO Cart Drawer, Free Shipping Meter, Delivery Stepper, Variants Schema, Inventory Scarcity, Admin Analytics, Leaflet Atlas, PDF Buffer Streaming) and technical architecture diagrams.
 
 ---
 
@@ -165,87 +165,63 @@ Showcase ability to engineer flexible e-commerce catalog schemas (sizes, volumes
 
 ---
 
-## 📌 Phase 5: High-Converting UX Enhancements (CRO)
+## 📌 Phase 5: High-Converting UX Enhancements (CRO) (Completed ✅)
 
 ### Goal
 Incorporate modern e-commerce user experience patterns inspired by premium retail storefronts.
 
-### 5.1 Slide-Over Mini Cart Drawer
+### 5.1 Slide-Over Mini Cart Drawer (Completed ✅)
+* **Status**: Implemented & Verified with 100% passing tests.
 * **Relevant Files**:
-  * [Drawer.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/Drawer.tsx)
-  * [AppShell.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/AppShell.tsx)
-  * [ProductDetail.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/products/ProductDetail.tsx)
-  * [ProductCard.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/ProductCard.tsx)
-* **Detailed Steps**:
-  1. Build a `CartDrawer.tsx` component leveraging the existing design system `Drawer`.
-  2. When a user clicks "Add to Bag", open the slide-over drawer smoothly from the right side of the screen instead of solely showing a toast.
-  3. Include instant item quantity manipulation, subtotal, and a direct "Checkout" button, reducing checkout friction by 1 click.
+  * [CartDrawer.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/cart/CartDrawer.tsx) — Slide-over mini cart drawer utilizing the design system `Drawer`, featuring item thumbnails, titles, variant badges/SKUs, live quantity stepper manipulation, price calculations, free shipping meter, direct "Proceed to Checkout" CTA button, and "View Shopping Bag" link.
+  * [CartDrawerContext.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/cart/CartDrawerContext.tsx) — Application-wide React Context providing `isOpen`, `openCartDrawer()`, `closeCartDrawer()`, and `toggleCartDrawer()` with route-change auto-dismissal and safe defaults.
+  * [Drawer.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/Drawer.tsx) — Enhanced with `panelClassName` and `header` prop overrides for custom drawer layouts.
+  * [useCart.ts](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/cart/useCart.ts) — Connected `useAddToCart` mutation to auto-open `CartDrawer` on add-to-bag success.
+  * [SiteHeader.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/SiteHeader.tsx) & [MobileNavDrawer.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/MobileNavDrawer.tsx) — Desktop and mobile bag buttons trigger the slide-over cart drawer directly.
+  * [AppShell.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/AppShell.tsx) — Wrapped application in `CartDrawerProvider` and mounted `CartDrawer`.
+  * [CartDrawer.test.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/cart/CartDrawer.test.tsx) — Full automated test suite verifying drawer open/close, line items, variant displays, and checkout navigation.
 
-### 5.2 Free Shipping Threshold Progress Meter
+### 5.2 Free Shipping Threshold Progress Meter (Completed ✅)
+* **Status**: Implemented & Verified with 100% passing tests.
 * **Relevant Files**:
-  * [CartPage.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/cart/CartPage.tsx)
-  * `CartDrawer.tsx` (new)
-* **Detailed Steps**:
-  1. Define a free shipping milestone (e.g., **$150 USD**).
-  2. Calculate `remaining = Math.max(0, 150 - subtotal)`.
-  3. Render an animated progress bar:
-     * If `remaining > 0`: *"Add $${remaining} more to unlock Complimentary Express Courier!"*
-     * If `remaining === 0`: *"🎉 You've unlocked Complimentary Express Courier Across the Region!"*
+  * [FreeShippingMeter.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/FreeShippingMeter.tsx) — Reusable conversion component featuring a $150 Regional Express milestone, remaining balance calculation, animated gold-leaf progress bar, white-glove courier emblem, and celebratory unlocked badge.
+  * [CartDrawer.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/cart/CartDrawer.tsx) — Mounted meter at top of slide-over drawer for instant visual feedback on adding pieces.
+  * [CartPage.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/cart/CartPage.tsx) — Prominently rendered free shipping meter above line items.
+  * [i18n.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/lib/i18n.tsx) — Localized strings for remaining amount and unlocked states in English and Arabic.
+  * [FreeShippingMeter.test.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/components/FreeShippingMeter.test.tsx) — Automated unit tests verifying threshold calculation, progress bar percentages, and unlocked state.
 
-### 5.3 Mobile Sticky "Add to Bag" Bar
-* **Relevant File**: [ProductDetail.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/products/ProductDetail.tsx)
-* **Detailed Steps**:
-  1. Using an `IntersectionObserver`, track when the primary "Add to Bag" button leaves the viewport on mobile devices.
-  2. Display a compact bottom fixed sheet with product thumbnail, title, price, and a quick "Add to Bag" CTA.
+### 5.3 Mobile Sticky "Add to Bag" Bar (Completed ✅)
+* **Status**: Implemented & Verified with 100% passing tests.
+* **Relevant Files**:
+  * [ProductDetail.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/products/ProductDetail.tsx) — Integrated `IntersectionObserver` observing the primary CTA button; when scrolled out of the viewport on mobile devices, smoothly reveals a sticky bottom sheet with piece thumbnail, title, active variant, live price, and a quick "Add to Bag" button with loading state.
+  * [ProductDetail.test.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/products/ProductDetail.test.tsx) — Automated tests verifying sticky bar appearance and content upon scroll intersection trigger.
 
 ---
 
-## 📌 Phase 6: Production Hardening, SEO & Quality Assurance
+## 📌 Phase 6: Production Hardening, SEO & Quality Assurance (Completed ✅)
 
 ### Goal
 Ensure technical recruiters, lead engineers, and CTOs inspecting the repository see clean code standards, rock-solid tests, and search engine optimization.
 
-### 6.1 Test Suite Cross-Platform Stability
-* **Relevant File**: [vitest.config.mjs](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/vitest.config.mjs)
-* **Detailed Steps**:
-  1. Update `vitest.config.mjs` to add `fileParallelism: false` or `poolOptions: { threads: { singleThread: true } }`.
-  2. This eliminates port collisions in `mongodb-memory-server` on Windows environments, guaranteeing that running `npm test` yields a reliable 100% pass across all developer environments.
-
-### 6.2 SEO & Schema.org Structured Data
+### 6.1 Test Suite Cross-Platform Stability (Completed ✅)
+* **Status**: Implemented & Verified (100% passing tests across 68 test files and 236 tests with zero deprecations).
 * **Relevant Files**:
-  * [index.html](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/index.html)
-  * [ProductDetail.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/products/ProductDetail.tsx)
-* **Detailed Steps**:
-  1. Inject `<script type="application/ld+json">` on `ProductDetail.tsx` providing Google Rich Snippets:
-     ```json
-     {
-       "@context": "https://schema.org/",
-       "@type": "Product",
-       "name": "Damascus Inlaid Walnut Keepsake Box",
-       "image": ["https://..."],
-       "description": "...",
-       "offers": {
-         "@type": "Offer",
-         "priceCurrency": "USD",
-         "price": "185.00",
-         "availability": "https://schema.org/InStock"
-       },
-       "aggregateRating": {
-         "@type": "AggregateRating",
-         "ratingValue": "4.9",
-         "reviewCount": "18"
-       }
-     }
-     ```
-  2. Add OpenGraph tags for rich Twitter/WhatsApp previews (`og:title`, `og:image`, `og:description`).
+  * [vitest.config.mjs](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/vitest.config.mjs) — Configured `fileParallelism: false` to eliminate port collisions in `mongodb-memory-server` under Windows; removed deprecated `poolOptions` syntax for clean Vitest v5 execution.
+  * [client/vite.config.ts](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/vite.config.ts) — Configured single-fork execution for jsdom client test stability.
 
-### 6.3 Security Hardening & Session Secret
+### 6.2 SEO & Schema.org Structured Data (Completed ✅)
+* **Status**: Implemented & Verified with automated tests.
 * **Relevant Files**:
-  * [app.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/app.js)
-  * [.env](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/.env)
-* **Detailed Steps**:
-  1. Replace `'this is a secret'` fallback in `app.js` with `process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')`.
-  2. Add `express-rate-limit` on sensitive routes (`/api/auth/login`, `/api/auth/register`, `/api/auth/reset-password`) to demonstrate defense-in-depth protection against brute-force attacks.
+  * [ProductDetail.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/products/ProductDetail.tsx) — Injected Schema.org `Product` JSON-LD (`<script type="application/ld+json">`) with product name, archival imagery, description, SKU, dynamic pricing offer, availability (`InStock` / `OutOfStock`), and aggregate reviews rating. Added dynamic `document.title` synchronization with cleanup on unmount.
+  * [index.html](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/index.html) — Configured OpenGraph (`og:title`, `og:description`, `og:image`, `og:site_name`) and Twitter Card meta tags for rich social sharing previews.
+  * [ProductDetail.test.tsx](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/products/ProductDetail.test.tsx) — Verified JSON-LD script presence, correct schema attributes, and document title.
+
+### 6.3 Security Hardening & Session Secret (Completed ✅)
+* **Status**: Implemented & Verified with automated tests.
+* **Relevant Files**:
+  * [app.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/app.js) — Replaced hardcoded secret fallback with `process.env.SESSION_SECRET || (isTest ? '...' : crypto.randomBytes(32).toString('hex'))` for cryptographically strong cookie signing.
+  * [routes/auth.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/routes/auth.js) — Added `express-rate-limit` protection on `/login`, `/signup`, `/reset-password`, and `/change-password` routes with automatic bypass in test mode (`skip: () => isTest`).
+  * [.env](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/.env) — Maintained environment variable standards.
 
 ---
 

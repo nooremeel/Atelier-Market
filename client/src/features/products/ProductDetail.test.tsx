@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
@@ -27,13 +27,22 @@ beforeEach(() => {
   queryClient.clear();
 });
 
-it('shows the product', async () => {
+it('shows the product with SEO Schema.org JSON-LD and document title', async () => {
   server.use(http.get('/api/products/p1', () => HttpResponse.json({
     product: { _id: 'p1', title: 'Rose Water', price: 9, description: 'Distilled Damask rose.', imageUrl: 'images/r.jpg', userId: 'u' },
   })));
   render(wrap('p1'));
   expect(await screen.findByRole('heading', { name: 'Rose Water' })).toBeInTheDocument();
   expect(screen.getByText('$9.00')).toBeInTheDocument();
+
+  // Verify SEO Schema.org script
+  const script = document.querySelector('script[type="application/ld+json"]');
+  expect(script).toBeInTheDocument();
+  const json = JSON.parse(script!.textContent || '{}');
+  expect(json['@type']).toBe('Product');
+  expect(json.name).toBe('Rose Water');
+  expect(json.offers.price).toBe('9.00');
+  expect(document.title).toContain('Rose Water');
 });
 
 it('shows not-found on 404', async () => {
@@ -104,5 +113,52 @@ it('renders variant selector pills and updates price when variant is selected', 
   });
   expect(screen.getByText(/SKU: ACV-500/i)).toBeInTheDocument();
 });
+
+it('renders mobile sticky add-to-bag bar when primary button is scrolled out of viewport', async () => {
+  let triggerObserver: ((entries: any[]) => void) | undefined;
+  class MockIntersectionObserver {
+    constructor(cb: any) {
+      triggerObserver = cb;
+    }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  const originalIO = window.IntersectionObserver;
+  window.IntersectionObserver = MockIntersectionObserver as any;
+
+  server.use(http.get('/api/products/sticky-test', () => HttpResponse.json({
+    product: {
+      _id: 'sticky-test',
+      title: 'Sticky Test Piece',
+      price: 120,
+      description: 'Test description',
+      imageUrl: 'images/test.jpg',
+      userId: 'u',
+      stock: 10,
+    },
+  })));
+
+  render(wrap('sticky-test'));
+  expect(await screen.findByRole('heading', { name: 'Sticky Test Piece' })).toBeInTheDocument();
+
+  // Initially sticky bar should not be visible
+  expect(screen.queryByTestId('mobile-sticky-bar')).not.toBeInTheDocument();
+
+  // Simulate scrolling past the primary CTA button
+  act(() => {
+    triggerObserver?.([{ isIntersecting: false, boundingClientRect: { top: -150 } }]);
+  });
+
+  // Mobile sticky bar should now appear
+  await waitFor(() => {
+    expect(screen.getByTestId('mobile-sticky-bar')).toBeInTheDocument();
+  });
+  expect(screen.getByTestId('mobile-sticky-bar')).toHaveTextContent('Sticky Test Piece');
+  expect(screen.getByTestId('mobile-sticky-bar')).toHaveTextContent('$120.00');
+
+  window.IntersectionObserver = originalIO;
+});
+
 
 

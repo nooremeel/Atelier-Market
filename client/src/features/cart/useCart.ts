@@ -3,6 +3,7 @@ import { apiGet, apiSend } from '../../lib/api';
 import { queryClient } from '../../lib/queryClient';
 import { useToast } from '../../components/ToastProvider';
 import { useI18n } from '../../lib/i18n';
+import { useCartDrawer } from './CartDrawerContext';
 import type { Cart } from '../../types';
 
 const CART_KEY = ['cart'] as const;
@@ -29,6 +30,7 @@ function normalizePayload(input: CartItemPayload) {
 function useCartMutation(
   fn: (payload: CartItemPayload) => Promise<Cart>,
   successMessage?: string,
+  onSuccessExtra?: (cart: Cart) => void,
 ) {
   const { notify } = useToast();
   const { t } = useI18n();
@@ -37,16 +39,25 @@ function useCartMutation(
     onSuccess: (cart) => {
       queryClient.setQueryData(CART_KEY, cart);
       if (successMessage) notify(successMessage, 'success');
+      if (onSuccessExtra) onSuccessExtra(cart);
     },
     onError: (err: Error) => notify(err.message || t('cart.updateError'), 'error'),
   });
 }
 
-export function useAddToCart() {
+export function useAddToCart(options?: { openDrawer?: boolean }) {
   const { t } = useI18n();
+  const { openCartDrawer } = useCartDrawer();
+  const shouldOpen = options?.openDrawer ?? true;
+
   return useCartMutation(
     (payload) => apiSend<Cart>('/api/cart', 'POST', normalizePayload(payload)),
     t('cart.addedToCart'),
+    () => {
+      if (shouldOpen) {
+        openCartDrawer();
+      }
+    },
   );
 }
 

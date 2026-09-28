@@ -8,9 +8,10 @@ import type { SessionUser } from '../types';
 type Props = {
   open: boolean; onClose: () => void;
   user: SessionUser | null; cartCount: number; favouritesCount?: number; onLogout: () => void;
+  onOpenCart?: () => void;
 };
 
-export function MobileNavDrawer({ open, onClose, user, cartCount, favouritesCount = 0, onLogout }: Props) {
+export function MobileNavDrawer({ open, onClose, user, cartCount, favouritesCount = 0, onLogout, onOpenCart }: Props) {
   const { t, locale, toggleLocale } = useI18n();
   const { isDark, toggleTheme } = useTheme();
   const item = 'block py-3 font-display text-step-2 rtl:text-step-2 text-ink hover:text-gold-leaf transition-colors border-b border-hairline/40 font-normal';
@@ -46,7 +47,17 @@ export function MobileNavDrawer({ open, onClose, user, cartCount, favouritesCoun
           </NavLink>
         )}
         {user && user.role !== 'seller' && (
-          <NavLink to="/cart" className={item}>
+          <NavLink
+            to="/cart"
+            className={item}
+            onClick={(e) => {
+              if (onOpenCart && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                e.preventDefault();
+                onClose();
+                onOpenCart();
+              }
+            }}
+          >
             {t('nav.cart')} <span className="tabular-nums text-step-0 text-gold-leaf ms-1">({cartCount})</span>
           </NavLink>
         )}

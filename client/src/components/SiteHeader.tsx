@@ -7,6 +7,7 @@ import { MobileNavDrawer } from './MobileNavDrawer';
 import { SearchOverlay } from './SearchOverlay';
 import { useTheme } from '../lib/theme';
 import { useI18n } from '../lib/i18n';
+import { useCartDrawer } from '../features/cart/CartDrawerContext';
 import type { SessionUser } from '../types';
 
 type Props = { user: SessionUser | null; cartCount: number; favouritesCount?: number; onLogout: () => void };
@@ -85,6 +86,7 @@ export function SiteHeader({ user, cartCount, favouritesCount = 0, onLogout }: P
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const { isDark, toggleTheme } = useTheme();
   const { locale, toggleLocale, t } = useI18n();
+  const { openCartDrawer } = useCartDrawer();
   const [cartBumping, setCartBumping] = useState(false);
   const prevCartCount = useRef(cartCount);
   const location = useLocation();
@@ -265,6 +267,12 @@ export function SiteHeader({ user, cartCount, favouritesCount = 0, onLogout }: P
           {user && user.role !== 'seller' && user.role !== 'admin' && (
             <NavLink
               to="/cart"
+              onClick={(e) => {
+                if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                  e.preventDefault();
+                  openCartDrawer();
+                }
+              }}
               className="hidden sm:inline-flex items-center gap-1.5 p-1.5 text-stone hover:text-ink hover:text-gold-leaf transition-colors rounded-sm"
               aria-label={t('nav.itemsCount', { count: cartCount })}
               title={t('nav.cart')}
@@ -460,6 +468,7 @@ export function SiteHeader({ user, cartCount, favouritesCount = 0, onLogout }: P
         cartCount={cartCount}
         favouritesCount={favouritesCount}
         onLogout={onLogout}
+        onOpenCart={openCartDrawer}
       />
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useProduct } from './useProduct';
 import { useAddToCart } from '../cart/useCart';
@@ -33,6 +33,8 @@ export function ProductDetail() {
   const isFavourite = (favData?.favourites ?? []).some((f) => f._id === id);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  const primaryCtaRef = useRef<HTMLDivElement>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -46,6 +48,31 @@ export function ProductDetail() {
       setSelectedVariantId(null);
     }
   }, [data?.product?._id, data?.product?.variants]);
+
+  useEffect(() => {
+    if (data?.product?.title) {
+      document.title = `${data.product.title} — Atelier Market`;
+    }
+    return () => {
+      document.title = 'Atelier Market — Handcrafted Goods from Gulf & Levant Artisans';
+    };
+  }, [data?.product?.title]);
+
+  useEffect(() => {
+    const el = primaryCtaRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Show sticky bar when the primary CTA has scrolled above the viewport
+        setShowStickyBar(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [data?.product?._id]);
 
   if (isLoading) {
     return (
@@ -89,8 +116,49 @@ export function ProductDetail() {
   const isSoldOut = currentStock <= 0 || p.isAvailable === false;
   const isLowStock = !isSoldOut && currentStock <= (p.lowStockThreshold ?? 5);
 
+  const handleAddToCart = () => {
+    if (user) {
+      addToCart.mutate({
+        productId: p._id,
+        variantId: activeVariant?._id || null,
+        quantity: 1,
+      });
+    } else {
+      notify(t('cart.signInPrompt'), 'error');
+      navigate('/login', { state: { from: location.pathname, reason: 'cart' } });
+    }
+  };
+
+  const jsonLd = {
+    '@context': 'https://schema.org/',
+    '@type': 'Product',
+    name: p.title,
+    image: [getImageUrl(p.imageUrl)],
+    description: p.description,
+    sku: activeVariant?.sku || p._id,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'USD',
+      price: currentPrice.toFixed(2),
+      availability: isSoldOut ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+    },
+    ...(p.ratings && p.ratings.count > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: p.ratings.average.toFixed(1),
+            reviewCount: p.ratings.count,
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="py-8 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Breadcrumb
         items={[
           { label: t('nav.shop'), to: '/' },
@@ -226,7 +294,7 @@ export function ProductDetail() {
             )}
           </div>
 
-          <div className="flex flex-col gap-3 pt-1">
+          <div className="flex flex-col gap-3 pt-1" ref={primaryCtaRef}>
             <div className="flex gap-3">
               {user?.role === 'seller' ? (
                 <div className="flex-1 flex items-center justify-center px-4 py-2.5 border border-hairline/80 bg-silk/40 rounded-sm text-[0.8125rem] text-stone font-sans italic text-center">
@@ -245,18 +313,7 @@ export function ProductDetail() {
                   className="flex-1"
                   size="md"
                   loading={addToCart.isPending}
-                  onClick={() => {
-                    if (user) {
-                      addToCart.mutate({
-                        productId: p._id,
-                        variantId: activeVariant?._id || null,
-                        quantity: 1,
-                      });
-                    } else {
-                      notify(t('cart.signInPrompt'), 'error');
-                      navigate('/login', { state: { from: location.pathname, reason: 'cart' } });
-                    }
-                  }}
+                  onClick={handleAddToCart}
                 >
                   {addToCart.isPending ? t('catalog.adding') : t('catalog.addToCart')}
                 </Button>
@@ -385,6 +442,48 @@ export function ProductDetail() {
         initialAverage={p.ratings?.average}
         initialCount={p.ratings?.count}
       />
+
+      {/* Mobile Sticky Add to Bag Bar (Requirement 5.3) */}
+      {showStickyBar && !isSoldOut && user?.role !== 'seller' && (
+        <div
+          data-testid="mobile-sticky-bar"
+          className="fixed bottom-0 inset-x-0 z-30 bg-canvas/95 dark:bg-canvas/95 backdrop-blur-md border-t border-hairline/80 px-4 py-3 shadow-luxury animate-fade-in md:hidden transition-all duration-300"
+        >
+          <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+            <div className="flex items-center gap-3 min-w-0">
+              <img
+                src={getImageUrl(p.imageUrl)}
+                alt={p.title}
+                className="w-11 h-11 object-cover rounded-xs border border-hairline/70 bg-sand/20 shrink-0"
+                onError={handleImageError}
+              />
+              <div className="min-w-0">
+                <p className="font-display text-sm font-medium text-ink truncate leading-tight">
+                  {p.title}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="font-sans text-xs font-semibold text-ink">
+                    <Price value={currentPrice} />
+                  </span>
+                  {activeVariant && (
+                    <span className="text-[0.6875rem] font-sans text-stone truncate max-w-[120px]">
+                      · {activeVariant.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              loading={addToCart.isPending}
+              onClick={handleAddToCart}
+              className="shrink-0 text-xs px-4 uppercase tracking-wider"
+            >
+              {addToCart.isPending ? t('catalog.adding') : t('catalog.addToCart')}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

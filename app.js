@@ -10,6 +10,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const fs = require('fs');
 const https = require('https');
+const crypto = require('crypto');
 
 const errorController = require('./controllers/errorController');
 
@@ -109,8 +110,10 @@ app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+const sessionSecret = process.env.SESSION_SECRET || (isTest ? 'atelier-market-test-session-secret-32b' : crypto.randomBytes(32).toString('hex'));
+
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'this is a secret',
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: store,

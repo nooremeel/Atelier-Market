@@ -8,9 +8,11 @@ type Props = {
   side?: 'start' | 'end';
   title: string;
   children: ReactNode;
+  panelClassName?: string;
+  header?: ReactNode;
 };
 
-export function Drawer({ open, onClose, side = 'end', title, children }: Props) {
+export function Drawer({ open, onClose, side = 'end', title, children, panelClassName, header }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -48,9 +50,14 @@ export function Drawer({ open, onClose, side = 'end', title, children }: Props) 
         className={cn(
           'absolute inset-y-0 h-full w-80 max-w-[85vw] bg-canvas text-ink p-8 shadow-drawer transition-transform',
           side === 'end' ? 'end-0 border-s border-hairline' : 'start-0 border-e border-hairline',
+          panelClassName,
         )}
       >
-        <h2 className="font-display text-step-3 font-normal text-ink mb-6">{title}</h2>
+        {header !== undefined ? (
+          header
+        ) : (
+          <h2 className="font-display text-step-3 font-normal text-ink mb-6">{title}</h2>
+        )}
         {children}
       </div>
     </div>

@@ -252,6 +252,16 @@ export const TRANSLATIONS = {
     'cart.updateError': 'Could not update shopping bag',
     'cart.quantity': 'Qty',
     'cart.maxStockReached': 'Maximum studio quantity reached',
+    'cart.drawerTitle': 'Your Shopping Bag',
+    'cart.itemsCount': '{count} items',
+    'cart.singleItem': '1 item',
+    'cart.viewFullBag': 'View Shopping Bag',
+    'cart.continueShopping': 'Continue Shopping',
+    'cart.freeShippingThreshold': 'Regional Express Courier',
+    'cart.freeShippingRemaining': 'Add {amount} more to unlock Complimentary Express Courier!',
+    'cart.freeShippingUnlocked': '🎉 You\'ve unlocked Complimentary Express Courier Across the Region!',
+    'cart.taxesNotice': 'Taxes and shipping calculated at checkout.',
+    'cart.closeBag': 'Close shopping bag',
 
     // Checkout & Orders
     'checkout.title': 'Bespoke Checkout',
@@ -947,6 +957,16 @@ export const TRANSLATIONS = {
     'cart.updateError': 'تعذر تحديث حقيبة الاقتناء',
     'cart.quantity': 'الكمية',
     'cart.maxStockReached': 'تم الوصول للحد الأقصى للكمية المتوفرة في الاستوديو',
+    'cart.drawerTitle': 'حقيبة الاقتناء',
+    'cart.itemsCount': '{count} قطع',
+    'cart.singleItem': 'قطعة واحدة',
+    'cart.viewFullBag': 'عرض حقيبة التسوق',
+    'cart.continueShopping': 'مواصلة الاستكشاف',
+    'cart.freeShippingThreshold': 'الشحن الإقليمي السريع',
+    'cart.freeShippingRemaining': 'أضف {amount} للحصول على شحن سريع مجاني!',
+    'cart.freeShippingUnlocked': '🎉 لقد حصلت على شحن سريع مجاني لجميع أنحاء المنطقة!',
+    'cart.taxesNotice': 'يتم احتساب الضرائب والشحن عند إتمام الطلب.',
+    'cart.closeBag': 'إغلاق حقيبة الاقتناء',
 
     // Checkout & Orders
     'checkout.title': 'إتمام الطلب',

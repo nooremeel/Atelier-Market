@@ -9,6 +9,8 @@ import { useAuth } from '../auth/AuthProvider';
 import { apiGet, apiSend } from '../lib/api';
 import { resetCsrfToken } from '../lib/csrf';
 import { queryClient } from '../lib/queryClient';
+import { CartDrawerProvider } from '../features/cart/CartDrawerContext';
+import { CartDrawer } from '../features/cart/CartDrawer';
 import type { Cart } from '../types';
 
 function ScrollToTop() {
@@ -56,21 +58,24 @@ export function AppShell() {
 
   return (
     <ToastProvider>
-      <ScrollRestoration />
-      <ScrollToTop />
-      <div className="flex min-h-screen flex-col bg-plaster text-ink selection:bg-gold-leaf selection:text-white overflow-x-clip">
-        <DemoPersonaBanner />
-        <SiteHeader
-          user={user}
-          cartCount={cart.data?.totalItems ?? 0}
-          favouritesCount={favs.data?.favourites.length ?? user?.favourites?.length ?? 0}
-          onLogout={onLogout}
-        />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6">
-          <Outlet />
-        </main>
-        <SiteFooter />
-      </div>
+      <CartDrawerProvider>
+        <ScrollRestoration />
+        <ScrollToTop />
+        <div className="flex min-h-screen flex-col bg-plaster text-ink selection:bg-gold-leaf selection:text-white overflow-x-clip">
+          <DemoPersonaBanner />
+          <SiteHeader
+            user={user}
+            cartCount={cart.data?.totalItems ?? 0}
+            favouritesCount={favs.data?.favourites.length ?? user?.favourites?.length ?? 0}
+            onLogout={onLogout}
+          />
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6">
+            <Outlet />
+          </main>
+          <SiteFooter />
+          <CartDrawer />
+        </div>
+      </CartDrawerProvider>
     </ToastProvider>
   );
 }

@@ -8,6 +8,7 @@ import { Button } from '../../components/Button';
 import { Link } from '../../components/Link';
 import { Skeleton } from '../../components/Skeleton';
 import { PageHeader } from '../../components/PageHeader';
+import { FreeShippingMeter } from '../../components/FreeShippingMeter';
 import { useI18n } from '../../lib/i18n';
 import type { AppliedDiscount } from '../../types';
 
@@ -69,6 +70,7 @@ export function CartPage() {
   return (
     <div className="pb-16">
       <PageHeader title={t('cart.title')} />
+      <FreeShippingMeter subtotal={data.totalPrice} className="mb-8" />
       <div className="grid gap-12 lg:grid-cols-[1fr_360px] items-start">
         <div className="flex flex-col">
           {data.items.map((line) => {
