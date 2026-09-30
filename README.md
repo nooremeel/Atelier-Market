@@ -2,6 +2,7 @@
 
 [![Vitest: 100% Passing](https://img.shields.io/badge/Vitest-100%25%20Passing%20(236%20tests)-10b981?style=for-the-badge&logo=vitest&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client)
+[![Payment: Paymob](https://img.shields.io/badge/Payment-Paymob%20Gateway%203DS-0066FF?style=for-the-badge&logo=shield&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/paymobService.js)
 [![Architecture: Express 5 + React 18](https://img.shields.io/badge/Architecture-Express%205%20%2B%20React%2018%20SPA-d4af37?style=for-the-badge&logo=react&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop)
 [![License: ISC](https://img.shields.io/badge/License-ISC-stone?style=for-the-badge)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/package.json)
 
@@ -17,7 +18,7 @@ The application features an instant **1-Click Demo Persona Bar** on `/login` and
 
 | Persona | Role | Email | Password | Key Capabilities Demonstrated |
 | :--- | :--- | :--- | :--- | :--- |
-| **Sara Hassan** | **Collector Patron** (Customer) | `sara@example.com` | `Demo1234!` | Browse catalog, choose product variants, slide-over mini cart, promo codes, 3-step checkout, visual delivery tracking, PDF invoices. |
+| **Sara Hassan** | **Collector Patron** (Customer) | `sara@example.com` | `Demo1234!` | Browse catalog, choose product variants, slide-over mini cart, promo codes, 3-step checkout, Paymob credit card vault (3D-Secure), visual delivery tracking, PDF invoices. |
 | **Layla Al-Rashidi** | **Artisan Seller** (Multi-Vendor Studio) | `layla@ateliermarket.com` | `Demo1234!` | Studio KPI dashboard, catalog pieces CRUD with stock thresholds, order status progression (`crafting`, `shipped`, Aramex tracking numbers). |
 | **Admin Director** | **Platform Admin** (Director) | `admin@ateliermarket.com` | `Demo1234!` | Marketplace-wide GMV analytics, cross-platform orders monitor, artisan directory, cross-studio piece audit, system health. |
 
@@ -65,6 +66,14 @@ The application features an instant **1-Click Demo Persona Bar** on `/login` and
 * **Rate Limiting & Cryptographic Cookies**: `express-rate-limit` deployed on authentication gateways; sessions signed with cryptographically secure 256-bit secrets via `crypto.randomBytes`.
 * **Cross-Platform Test Reliability**: Vitest configuration hardened with `fileParallelism: false` to eliminate database port collisions across Windows, macOS, and Linux CI.
 
+### 9. Paymob Payment Gateway Integration & Luxury Vault
+* **Complete Financial Pipeline**: Seamlessly implements the 3-step Paymob financial workflow — Ephemeral Auth Token generation, Order Registration in piasters (cents), Payment Key Token issuance, and Bank 3D-Secure (3DS) ACS authorization.
+* **Atelier Noir Luxury Payment Vault**: Custom high-fidelity modal dialog featuring real-time Luhn algorithm card validation, live brand detection (Visa, Mastercard, American Express), and dynamic interactive card preview matching luxury direct-to-consumer standards.
+* **Dual Execution Rails**: Direct card API submission with smooth bank OTP challenge redirection, alongside an instant toggle to inspect the official Paymob hosted iframe container.
+* **HMAC-SHA512 Cryptographic Webhook Security**: Server-to-server webhook endpoint (`POST /api/paymob/webhook`) cryptographically verified against Paymob's 20-field lexical ordering signature to prevent man-in-the-middle or price-tampering attacks.
+* **Fail-Safe Browser Return & Active Reconciliation**: Dynamic redirection callback (`ALL /api/paymob/callback`) supporting cross-environment URL resolution with celebratory status banners. Active transaction inquiry (`inquirePaymobOrder`) reconciles unconfirmed orders and empties carts even if a customer uses browser back buttons.
+* **Strict RTL/LTR Isolation**: Dedicated bidirectional layout isolation ensuring card numbers, expiry dates, and CVVs preserve proper cursor tracking and numerical formatting under Arabic RTL mode.
+
 ---
 
 ## 🛠️ Architecture & Tech Stack
@@ -95,7 +104,7 @@ flowchart TD
 
 ### Technology Breakdown
 * **Frontend**: React 18, TypeScript (Strict), Vite, TailwindCSS (custom luxury tokens: Gold Leaf, Sand, Silk, Plaster, Najd Black), React Router 6, TanStack Query v5, Leaflet, MSW (Mock Service Worker).
-* **Backend**: Node.js, Express 5.x, Mongoose / MongoDB Atlas, Multer, PDFKit, Helmet, Compression, Morgan, Express-Rate-Limit, Express-Validator.
+* **Backend**: Node.js, Express 5.x, Mongoose / MongoDB Atlas, Paymob Accept Gateway API (Card 3DS & Webhooks), Multer, PDFKit, Helmet, Compression, Morgan, Express-Rate-Limit, Express-Validator.
 * **Testing & Quality Assurance**: Vitest, React Testing Library, Supertest, MongoDB Memory Server.
 
 ---
@@ -142,6 +151,17 @@ PORT=3000
 NODE_ENV=development
 SESSION_SECRET=atelier_market_super_secret_session_key_2026_secure
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.example.mongodb.net/shop
+
+# Paymob Payment Gateway (Optional: defaults to offline simulation if unconfigured)
+PAYMOB_SANDBOX_MODE=false
+PAYMOB_API_KEY=your_paymob_account_jwt_token
+PAYMOB_SECRET_KEY=egy_sk_test_...
+PAYMOB_PUBLIC_KEY=egy_pk_test_...
+PAYMOB_INTEGRATION_ID=your_card_integration_id
+PAYMOB_HMAC_SECRET=your_paymob_hmac_secret
+PAYMOB_IFRAME_ID=your_iframe_id
+PAYMOB_CURRENCY=EGP
+APP_URL=http://localhost:5173
 ```
 
 ### 4. Run Development Servers
