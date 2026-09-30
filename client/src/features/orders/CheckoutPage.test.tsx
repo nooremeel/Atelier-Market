@@ -14,12 +14,12 @@ beforeEach(() => {
   queryClient.clear();
 });
 
-function wrap() {
+function wrap(initialEntries = ['/checkout']) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ToastProvider>
-          <MemoryRouter initialEntries={['/checkout']}>
+          <MemoryRouter initialEntries={initialEntries}>
             <Routes>
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/orders" element={<div>orders page</div>} />
@@ -407,6 +407,43 @@ describe('CheckoutPage 3-step wizard', () => {
 
     // Should display invalid expiry error
     expect(await screen.findByText(/please enter a valid future expiry date/i)).toBeInTheDocument();
+  });
+
+  it('renders payment declined alert banner and switches to payment step', async () => {
+    render(wrap(['/checkout?payment=declined&message=Insufficient%20funds']));
+
+    expect(await screen.findByText(/payment declined/i)).toBeInTheDocument();
+    expect(screen.getByText('Insufficient funds')).toBeInTheDocument();
+
+    // Verify it automatically landed on step 2 (payment card preview or inputs present)
+    expect(screen.getByLabelText(/name on card/i)).toBeInTheDocument();
+
+    // Dismiss banner
+    const dismissBtn = screen.getByRole('button', { name: /dismiss notice/i });
+    await userEvent.click(dismissBtn);
+    expect(screen.queryByText(/payment declined/i)).not.toBeInTheDocument();
+  });
+
+  it('renders payment cancelled warning banner and switches to payment step', async () => {
+    render(wrap(['/checkout?payment=cancelled']));
+
+    expect(await screen.findByText(/payment cancelled/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/name on card/i)).toBeInTheDocument();
+
+    const dismissBtn = screen.getByRole('button', { name: /dismiss notice/i });
+    await userEvent.click(dismissBtn);
+    expect(screen.queryByText(/payment cancelled/i)).not.toBeInTheDocument();
+  });
+
+  it('instantly renders checkout items from cart cache without showing empty cart state', async () => {
+    queryClient.setQueryData(['cart'], mockCheckoutData);
+
+    render(wrap(['/checkout']));
+
+    expect(screen.queryByText(/your bag is empty/i)).not.toBeInTheDocument();
+    expect(await screen.findByRole('navigation', { name: /progress/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /shipping destination/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /order summary/i })).toBeInTheDocument();
   });
 });
 

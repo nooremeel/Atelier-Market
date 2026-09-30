@@ -217,8 +217,8 @@ async function reconcilePendingPaymobOrders(userId) {
 exports.getCart = async (req, res, next) => {
   try {
     await reconcilePendingPaymobOrders(req.user._id);
-    const user = await req.user.populate('cart.items.productId');
-    return res.json(serializeCart(user));
+    const user = await User.findById(req.user._id).populate('cart.items.productId');
+    return res.json(serializeCart(user || req.user));
   } catch (err) {
     next(new Error(err));
   }
@@ -318,11 +318,14 @@ exports.postCartDecrement = (req, res, next) => {
     .catch((err) => next(new Error(err)));
 };
 
-exports.getCheckout = (req, res, next) => {
-  req.user
-    .populate('cart.items.productId')
-    .then((user) => res.json(serializeCart(user)))
-    .catch((err) => next(new Error(err)));
+exports.getCheckout = async (req, res, next) => {
+  try {
+    await reconcilePendingPaymobOrders(req.user._id);
+    const user = await User.findById(req.user._id).populate('cart.items.productId');
+    return res.json(serializeCart(user || req.user));
+  } catch (err) {
+    next(new Error(err));
+  }
 };
 
 exports.postOrder = async (req, res, next) => {

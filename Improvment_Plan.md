@@ -24,7 +24,7 @@ Freelance clients, startup founders, and agency leads evaluate developer portfol
 | **Phase 4** | **Product Variants & Options (Size / Scent / Material)**| 💎 High (Shows Enterprise Catalog Architecture)| Completed ✅ |
 | **Phase 5** | **Slide-Over Mini Cart & Free Shipping Progress Meter**| ✨ High (E-Commerce UX & Conversion Magic) | Completed ✅ |
 | **Phase 6** | **Production Hardening, SEO (JSON-LD), & Test Stability**| 🛡️ High (Shows CTO-Level Clean Code Standards)| Completed ✅ |
-| **Phase 7** | **Paymob Payment Integration & Luxury Vault** | 💳 Critical (Commercial Financial Integration) | Completed ✅ *(7.4 Deferred to Live Deploy)* |
+| **Phase 7** | **Paymob Payment Integration & Luxury Vault** | 💳 Critical (Commercial Financial Integration) | Completed ✅ |
 
 ---
 
@@ -266,12 +266,24 @@ Polish the Paymob payment integration from functional to seamless, ensuring inst
   * [`client/src/features/orders/CheckoutPage.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/CheckoutPage.tsx)
   * [`client/src/features/orders/CheckoutPage.test.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/CheckoutPage.test.tsx)
 
-### 7.4 Paymob Dashboard Callback URL (Deferred to Final Deployment Step ⏳)
-* **Status**: Deferred to Final Deployment Step per user preference.
-* **Details**:
-  * The store's backend already has `/api/paymob/callback` fully implemented to handle both GET and POST browser redirections from Paymob with HMAC security and CSRF exemption.
-  * In local development, our live reconciliation (`inquirePaymobOrder` in 7.5) automatically syncs order status and cart clearance without requiring localhost URLs in the dashboard.
-  * When ready for production deployment, the final step will be to enter the production domain callback (`https://your-domain.com/api/paymob/callback`) into the Paymob Dashboard under Payment Integrations.
+### 7.4 Paymob Dashboard Callback URL & Redirection UX (Completed ✅)
+* **Status**: Implemented & Verified with automated tests (100% passing across 254 tests).
+* **Accomplishments**:
+  * Implemented dynamic client host resolution (`getFrontendBaseUrl(req)`) in [`routes/paymob.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/routes/paymob.js) supporting `APP_URL`, `FRONTEND_URL`, `x-forwarded-host`/`x-forwarded-proto`, and local proxy port fallback (`http://localhost:5173`).
+  * Upgraded `ALL /api/paymob/callback` to handle both GET query strings and POST form payloads (`req.body.obj` or direct properties), reconciling order fulfillment, atomically decrementing inventory, clearing the customer's cart, and redirecting with state query parameters:
+    * `/orders?payment=success&orderId=...&txn=...`
+    * `/checkout?payment=declined&message=...`
+    * `/checkout?payment=cancelled`
+  * Mounted gold-leaf celebratory banner with order ID and Paymob verification badge on [`OrdersPage.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/OrdersPage.tsx), triggering query cache invalidation (`cart` and `orders`) and URL cleanup on dismiss.
+  * Mounted oxblood declined banner and amber cancellation banner on [`CheckoutPage.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/CheckoutPage.tsx), automatically locking the checkout wizard to Step 2 (Payment) so shipping inputs and the cart are preserved without redundant typing.
+  * Added complete bilingual localization (English and Arabic) across all status banners and notifications in [`client/src/lib/i18n.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/lib/i18n.tsx).
+* **Relevant Files**:
+  * [`routes/paymob.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/routes/paymob.js)
+  * [`client/src/features/orders/OrdersPage.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/OrdersPage.tsx)
+  * [`client/src/features/orders/CheckoutPage.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/CheckoutPage.tsx)
+  * [`client/src/lib/i18n.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/lib/i18n.tsx)
+  * [`client/src/features/orders/OrdersPage.test.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/OrdersPage.test.tsx)
+  * [`client/src/features/orders/CheckoutPage.test.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/CheckoutPage.test.tsx)
 
 ### 7.5 Cart Clearance & Order Fulfillment Sync (Completed ✅)
 * **Status**: Implemented & Verified with automated tests.

@@ -8,8 +8,8 @@ import { server } from '../../test/server';
 import { queryClient } from '../../lib/queryClient';
 import { OrdersPage } from './OrdersPage';
 
-function wrap(ui: ReactNode) {
-  return <QueryClientProvider client={queryClient}><MemoryRouter>{ui}</MemoryRouter></QueryClientProvider>;
+function wrap(ui: ReactNode, initialEntries = ['/orders']) {
+  return <QueryClientProvider client={queryClient}><MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter></QueryClientProvider>;
 }
 
 beforeEach(() => { queryClient.clear(); });
@@ -75,4 +75,25 @@ it('renders the visual delivery tracker stepper and studio provenance timeline',
   // Click to open timeline
   fireEvent.click(timelineToggle);
   expect(await screen.findByText('Artisan began handcrafting in studio workshop.')).toBeInTheDocument();
+});
+
+it('renders celebratory payment success banner and clears it on dismiss', async () => {
+  server.use(http.get('/api/orders', () => HttpResponse.json({
+    orders: [{
+      _id: 'ord-paymob-88',
+      totalPrice: 120,
+      products: [{ productData: { _id: 'p1', title: 'Silk Scarf', price: 120, description: 'd', imageUrl: 'i', userId: 'u' }, quantity: 1 }],
+    }],
+  })));
+
+  render(wrap(<OrdersPage />, ['/orders?payment=success&orderId=ord-paymob-88&txn=TXN-12345']));
+
+  expect(await screen.findByText(/Payment Authorized & Confirmed/i)).toBeInTheDocument();
+  expect(screen.getByText('ord-paymob-88')).toBeInTheDocument();
+  expect(screen.getByText('TXN-12345')).toBeInTheDocument();
+
+  const dismissBtn = screen.getByRole('button', { name: /dismiss notice/i });
+  fireEvent.click(dismissBtn);
+
+  expect(screen.queryByText(/Payment Authorized & Confirmed/i)).not.toBeInTheDocument();
 });

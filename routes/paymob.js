@@ -511,67 +511,120 @@ router.post('/cancel', isCustomerOrAdmin, async (req, res, next) => {
 });
 
 /**
+ * Helper: Resolve the client SPA base URL dynamically across local dev, staging, and production deployments.
+ */
+function getFrontendBaseUrl(req) {
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(/\/$/, '');
+  }
+  if (process.env.FRONTEND_URL) {
+    return process.env.FRONTEND_URL.replace(/\/$/, '');
+  }
+  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  if (host && (host.includes('localhost:3001') || host.includes('127.0.0.1:3001'))) {
+    return 'http://localhost:5173';
+  }
+  if (host) {
+    return `${proto}://${host}`;
+  }
+  return 'http://localhost:5173';
+}
+
+/**
  * ALL /api/paymob/callback
  * Paymob Transaction Response Callback (Browser Redirection after 3DS).
  * When 3DS authentication completes, Paymob redirects the customer's browser here.
  */
 router.all('/callback', async (req, res) => {
+  const frontendUrl = getFrontendBaseUrl(req);
   try {
-    const data = req.method === 'POST' ? req.body : req.query;
-    const isSuccess = data.success === 'true' || data.success === true;
-    const merchantOrderId = data.merchant_order_id;
-    const txnId = data.id;
+    const rawPayload = req.method === 'POST' ? (req.body?.obj || req.body || {}) : req.query;
+    const isSuccess =
+      rawPayload.success === 'true' ||
+      rawPayload.success === true ||
+      rawPayload.txn_response_code === 'APPROVED';
 
-    console.log(`[Paymob Response Callback] Browser redirect received: Order=${merchantOrderId}, Success=${isSuccess}, Txn=${txnId}`);
+    const merchantOrderId =
+      rawPayload.merchant_order_id ||
+      rawPayload['order.merchant_order_id'] ||
+      rawPayload.order?.merchant_order_id ||
+      rawPayload.order_id;
+
+    const txnId = rawPayload.id || rawPayload.transaction_id;
+    const rawMessage =
+      rawPayload['data.message'] ||
+      rawPayload.message ||
+      rawPayload.data?.message ||
+      (isSuccess ? 'Payment approved' : 'Payment was declined or cancelled');
+
+    const isCancelled =
+      rawPayload.txn_response_code === 'CANCELLED' ||
+      rawMessage.toLowerCase().includes('cancel') ||
+      rawPayload.cancelled === 'true' ||
+      rawPayload.cancelled === true;
+
+    console.log(`[Paymob Response Callback] Browser redirect: Order=${merchantOrderId}, Success=${isSuccess}, Txn=${txnId}, Msg="${rawMessage}"`);
 
     if (merchantOrderId) {
       const order = await Order.findById(merchantOrderId);
-      if (order && isSuccess && order.paymentStatus !== 'paid') {
-        order.paymentStatus = 'paid';
-        order.status = 'confirmed';
-        order.paymentReference = `PAYMOB-TXN-${txnId}`;
-        order.timeline.push({
-          status: 'confirmed',
-          timestamp: new Date(),
-          note: `Payment authorized via Paymob 3D-Secure redirection (Txn #${txnId}).`,
-        });
+      if (order) {
+        if (isSuccess && order.paymentStatus !== 'paid') {
+          order.paymentStatus = 'paid';
+          order.status = 'confirmed';
+          order.paymentReference = `PAYMOB-TXN-${txnId || Date.now()}`;
+          order.timeline.push({
+            status: 'confirmed',
+            timestamp: new Date(),
+            note: `Payment authorized via Paymob 3D-Secure redirection (Txn #${txnId || 'CALLBACK'}).`,
+          });
 
-        // Decrement stock if not already processed by webhook
-        for (const item of order.products) {
-          const prodId = item.productData?._id;
-          const variantId = item.variant?._id;
-          if (prodId && variantId) {
-            await Product.updateOne(
-              { _id: prodId, 'variants._id': variantId },
-              { $inc: { 'variants.$.stock': -item.quantity, stock: -item.quantity } }
-            );
-          } else if (prodId) {
-            await Product.findByIdAndUpdate(prodId, { $inc: { stock: -item.quantity } });
+          // Decrement stock if not already processed by webhook
+          for (const item of order.products) {
+            const prodId = item.productData?._id;
+            const variantId = item.variant?._id;
+            if (prodId && variantId) {
+              await Product.updateOne(
+                { _id: prodId, 'variants._id': variantId },
+                { $inc: { 'variants.$.stock': -item.quantity, stock: -item.quantity } }
+              );
+            } else if (prodId) {
+              await Product.findByIdAndUpdate(prodId, { $inc: { stock: -item.quantity } });
+            }
           }
-        }
 
-        if (order.discount?.code) {
-          await Discount.updateOne({ code: order.discount.code }, { $inc: { usedCount: 1 } });
-        }
+          if (order.discount?.code) {
+            await Discount.updateOne({ code: order.discount.code }, { $inc: { usedCount: 1 } });
+          }
 
-        await order.save();
+          await order.save();
 
-        const customer = await User.findById(order.user.userId);
-        if (customer) {
-          await customer.clearCart();
+          const customer = await User.findById(order.user.userId);
+          if (customer) {
+            await customer.clearCart();
+          }
+        } else if (!isSuccess && order.status === 'pending') {
+          order.timeline.push({
+            status: 'pending',
+            timestamp: new Date(),
+            note: `Payment attempt declined or cancelled via gateway callback: ${rawMessage}.`,
+          });
+          await order.save();
         }
       }
     }
 
     if (isSuccess) {
-      return res.redirect(`http://localhost:5173/orders?payment=success&orderId=${merchantOrderId || ''}`);
+      return res.redirect(`${frontendUrl}/orders?payment=success&orderId=${merchantOrderId || ''}&txn=${txnId || ''}`);
+    } else if (isCancelled) {
+      return res.redirect(`${frontendUrl}/checkout?payment=cancelled`);
     } else {
-      const msg = encodeURIComponent(data['data.message'] || 'Payment failed or was declined.');
-      return res.redirect(`http://localhost:5173/checkout?payment=failed&message=${msg}`);
+      const msg = encodeURIComponent(rawMessage);
+      return res.redirect(`${frontendUrl}/checkout?payment=declined&message=${msg}`);
     }
   } catch (err) {
     console.error('[Paymob Callback Redirection Error]:', err);
-    return res.redirect('http://localhost:5173/orders');
+    return res.redirect(`${frontendUrl}/orders`);
   }
 });
 

@@ -38,6 +38,9 @@ function useCartMutation(
     mutationFn: fn,
     onSuccess: (cart) => {
       queryClient.setQueryData(CART_KEY, cart);
+      queryClient.setQueryData(['checkout'], cart);
+      queryClient.invalidateQueries({ queryKey: ['checkout'] });
+      queryClient.invalidateQueries({ queryKey: CART_KEY });
       if (successMessage) notify(successMessage, 'success');
       if (onSuccessExtra) onSuccessExtra(cart);
     },

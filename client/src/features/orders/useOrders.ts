@@ -5,7 +5,13 @@ import { useToast } from '../../components/ToastProvider';
 import type { Cart, Order, SaveToProfileOptions } from '../../types';
 
 export function useCheckout() {
-  return useQuery({ queryKey: ['checkout'], queryFn: () => apiGet<Cart>('/api/checkout') });
+  return useQuery({
+    queryKey: ['checkout'],
+    queryFn: () => apiGet<Cart>('/api/checkout'),
+    initialData: () => queryClient.getQueryData<Cart>(['cart']),
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
 }
 
 export function useOrders() {

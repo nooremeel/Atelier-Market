@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useOrders } from './useOrders';
 import { EmptyState } from '../../components/EmptyState';
 import { Link } from '../../components/Link';
@@ -181,8 +183,28 @@ function OrderDeliveryStepper({ order }: { order: Order }) {
 export function OrdersPage() {
   const { data, isLoading } = useOrders();
   const { t, isArabic } = useI18n();
+  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [openTimelines, setOpenTimelines] = useState<Record<string, boolean>>({});
+
+  const paymentStatus = searchParams.get('payment');
+  const orderIdParam = searchParams.get('orderId');
+  const txnIdParam = searchParams.get('txn');
+
+  useEffect(() => {
+    if (paymentStatus === 'success') {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    }
+  }, [paymentStatus, queryClient]);
+
+  const dismissPaymentSuccess = () => {
+    searchParams.delete('payment');
+    searchParams.delete('orderId');
+    searchParams.delete('txn');
+    setSearchParams(searchParams, { replace: true });
+  };
 
   const handleCopyTracking = (tracking: string, orderId: string) => {
     if (!tracking) return;
@@ -199,10 +221,64 @@ export function OrdersPage() {
     }));
   };
 
+  const paymentSuccessBanner = paymentStatus === 'success' ? (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mb-8 p-5 sm:p-6 rounded-sm border border-gold-leaf/60 bg-gradient-to-r from-gold-leaf/10 via-sand/20 to-gold-leaf/5 shadow-luxury flex items-start justify-between gap-4 transition-all"
+    >
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 rounded-full border border-gold-leaf bg-gold-leaf/20 text-gold-leaf flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-display text-step-1 text-ink font-normal tracking-tight">
+              {t('orders.paymentSuccessTitle')}
+            </h3>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[0.625rem] font-sans uppercase tracking-[0.18em] border border-gold-leaf/60 text-gold-leaf bg-gold-leaf/15 font-semibold">
+              {isArabic ? 'معتمد عبر بايموب' : 'Verified by Paymob'}
+            </span>
+          </div>
+          <p className="font-sans text-[0.8125rem] text-stone leading-relaxed max-w-2xl">
+            {t('orders.paymentSuccessDesc')}
+          </p>
+          {(orderIdParam || txnIdParam) && (
+            <div className="mt-2 flex items-center gap-3 font-mono text-[0.75rem] text-stone flex-wrap">
+              {orderIdParam && (
+                <span className="px-2 py-0.5 rounded-[2px] bg-canvas/80 border border-hairline/60">
+                  <span className="text-stone/70">{t('orders.orderNum')}</span>{' '}
+                  <strong className="text-ink font-medium">{orderIdParam}</strong>
+                </span>
+              )}
+              {txnIdParam && (
+                <span className="px-2 py-0.5 rounded-[2px] bg-canvas/80 border border-hairline/60">
+                  <span className="text-stone/70">Txn:</span>{' '}
+                  <strong className="text-ink font-medium">{txnIdParam}</strong>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={dismissPaymentSuccess}
+        aria-label={isArabic ? 'إغلاق' : 'Dismiss notice'}
+        className="text-stone hover:text-ink p-1.5 rounded-sm hover:bg-canvas/60 transition-colors"
+      >
+        <span className="text-sm font-bold">✕</span>
+      </button>
+    </div>
+  ) : null;
+
   if (isLoading) {
     return (
       <div className="pb-16 max-w-5xl mx-auto px-4 sm:px-6">
         <AccountNav activeTab="orders" />
+        {paymentSuccessBanner}
         <div className="flex flex-col gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-64 rounded-sm" />
@@ -216,6 +292,7 @@ export function OrdersPage() {
     return (
       <div className="pb-16 max-w-5xl mx-auto px-4 sm:px-6">
         <AccountNav activeTab="orders" />
+        {paymentSuccessBanner}
         <EmptyState
           title={t('orders.emptyTitle')}
           description={t('orders.emptyDesc')}
@@ -228,6 +305,7 @@ export function OrdersPage() {
   return (
     <div className="pb-16 max-w-5xl mx-auto px-4 sm:px-6">
       <AccountNav activeTab="orders" />
+      {paymentSuccessBanner}
       <div className="flex flex-col gap-8">
         {data.orders.map((order) => {
           const dateStr = order.createdAt

@@ -58,9 +58,13 @@ export function PaymentCardPreview({
 
   return (
     <div
+      dir="ltr"
+      lang="en"
       className={`relative w-full max-w-[360px] aspect-[1.586] rounded-md p-5 sm:p-6 text-white shadow-card overflow-hidden select-none border border-gold-leaf/30 bg-gradient-to-br from-[#1c1c20] via-[#121214] to-[#0a0a0c] transition-all duration-300 ${className}`}
       style={{
         boxShadow: '0 12px 30px -8px rgba(0,0,0,0.45), 0 0 0 1px rgba(197, 168, 128, 0.25)',
+        direction: 'ltr',
+        textAlign: 'left',
       }}
       aria-hidden="true"
     >
@@ -68,9 +72,9 @@ export function PaymentCardPreview({
       <div className="absolute -right-8 -bottom-10 w-44 h-44 rounded-full border border-gold-leaf/10 pointer-events-none" />
       <div className="absolute -right-16 -bottom-16 w-60 h-60 rounded-full border border-gold-leaf/5 pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col justify-between h-full">
+      <div className="relative z-10 flex flex-col justify-between h-full" dir="ltr">
         {/* Top row: Atelier Monogram & Contactless / Network */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between" dir="ltr">
           <div className="flex items-center gap-2">
             <span className="font-display tracking-[0.2em] text-[0.8125rem] text-gold-leaf font-medium uppercase">
               Atelier
@@ -124,7 +128,7 @@ export function PaymentCardPreview({
         </div>
 
         {/* EMV Chip */}
-        <div className="my-1">
+        <div className="my-1" dir="ltr">
           <div className="w-9 h-7 rounded-[4px] bg-gradient-to-tr from-[#c5a880] via-[#e5d4be] to-[#b89569] p-0.5 shadow-sm border border-gold-leaf/60 flex items-center justify-center">
             <div className="w-full h-full rounded-[2px] border border-gold-leaf/40 grid grid-cols-2 grid-rows-2 opacity-75">
               <div className="border-r border-b border-gold-leaf/50" />
@@ -136,31 +140,32 @@ export function PaymentCardPreview({
         </div>
 
         {/* Card Number */}
-        <div className="py-1">
+        <div className="py-1" dir="ltr">
           <span
-            className="font-mono text-[0.9375rem] sm:text-[1.0625rem] tracking-[0.16em] text-white/95 font-normal select-all drop-shadow-xs"
+            className="font-mono text-[0.9375rem] sm:text-[1.0625rem] tracking-[0.16em] text-white/95 font-normal select-all drop-shadow-xs block text-left"
             dir="ltr"
+            style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'isolate' }}
           >
             {displayCardNumber}
           </span>
         </div>
 
         {/* Bottom row: Cardholder Name & Expiry */}
-        <div className={`flex items-end justify-between gap-3 text-[0.6875rem] font-sans ${isArabic ? 'flex-row-reverse' : ''}`}>
-          <div className="flex flex-col min-w-0 max-w-[65%]">
+        <div className="flex items-end justify-between gap-3 text-[0.6875rem] font-sans" dir="ltr">
+          <div className="flex flex-col min-w-0 max-w-[65%] text-left" dir="ltr">
             <span className="text-[0.5625rem] uppercase tracking-[0.18em] text-stone/80 font-medium">
               Cardholder
             </span>
-            <span className="text-white/90 font-medium tracking-[0.08em] truncate uppercase mt-0.5">
+            <span className="text-white/90 font-medium tracking-[0.08em] truncate uppercase mt-0.5 block text-left">
               {displayName}
             </span>
           </div>
 
-          <div className="flex flex-col items-end shrink-0" dir="ltr">
+          <div className="flex flex-col items-end shrink-0 text-right" dir="ltr">
             <span className="text-[0.5625rem] uppercase tracking-[0.18em] text-stone/80 font-medium">
               Expires
             </span>
-            <span className="text-white/90 font-medium font-mono tracking-wider mt-0.5">
+            <span className="text-white/90 font-medium font-mono tracking-wider mt-0.5 block text-right">
               {displayExpiry}
             </span>
           </div>

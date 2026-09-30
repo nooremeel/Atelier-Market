@@ -1,5 +1,5 @@
 import { useState, useEffect, type ChangeEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCheckout, usePlaceOrder, useInitiatePaymob, type PaymobInitiateResponse } from './useOrders';
 import { useAddressBook } from '../account/useAccount';
 import { useAuth } from '../../auth/AuthProvider';
@@ -51,9 +51,31 @@ export function CheckoutPage() {
   const placeOrder = usePlaceOrder();
   const initiatePaymob = useInitiatePaymob();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t, isArabic } = useI18n();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const paymentParam = searchParams.get('payment');
+  const messageParam = searchParams.get('message');
+
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(() => {
+    const p = searchParams.get('payment');
+    if (p === 'declined' || p === 'failed' || p === 'cancelled') {
+      return 2;
+    }
+    return 1;
+  });
+
+  useEffect(() => {
+    if (paymentParam === 'declined' || paymentParam === 'failed' || paymentParam === 'cancelled') {
+      setCurrentStep(2);
+    }
+  }, [paymentParam]);
+
+  const dismissPaymentNotice = () => {
+    searchParams.delete('payment');
+    searchParams.delete('message');
+    setSearchParams(searchParams, { replace: true });
+  };
   const [paymobSession, setPaymobSession] = useState<PaymobInitiateResponse | null>(null);
   const [isPaymobModalOpen, setIsPaymobModalOpen] = useState(false);
 
@@ -446,6 +468,81 @@ export function CheckoutPage() {
     <div className="pb-20">
       <PageHeader title={t('checkout.title')} />
 
+      {/* Post-Payment Status Notification Banners */}
+      {(paymentParam === 'declined' || paymentParam === 'failed') && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="mb-8 p-5 sm:p-6 rounded-sm border border-oxblood/50 bg-oxblood/10 shadow-luxury flex items-start justify-between gap-4 transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full border border-oxblood/40 bg-oxblood/20 text-oxblood flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 8.25h.008v.008H12v-.008z" />
+              </svg>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-display text-step-1 text-oxblood font-normal tracking-tight">
+                  {t('checkout.paymentDeclinedTitle')}
+                </h3>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[0.625rem] font-sans uppercase tracking-[0.18em] border border-oxblood/40 text-oxblood bg-oxblood/10 font-semibold">
+                  {isArabic ? 'تعذر التفويض' : 'Authorization Failed'}
+                </span>
+              </div>
+              <p className="font-sans text-[0.8125rem] text-oxblood/90 leading-relaxed max-w-2xl">
+                {messageParam ? decodeURIComponent(messageParam) : t('checkout.paymentDeclinedDesc')}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={dismissPaymentNotice}
+            aria-label={isArabic ? 'إغلاق' : 'Dismiss notice'}
+            className="text-oxblood/70 hover:text-oxblood p-1.5 rounded-sm hover:bg-oxblood/20 transition-colors"
+          >
+            <span className="text-sm font-bold">✕</span>
+          </button>
+        </div>
+      )}
+
+      {paymentParam === 'cancelled' && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-8 p-5 sm:p-6 rounded-sm border border-gold-leaf/50 bg-gold-leaf/10 shadow-luxury flex items-start justify-between gap-4 transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full border border-gold-leaf/40 bg-gold-leaf/20 text-gold-leaf flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-display text-step-1 text-ink font-normal tracking-tight">
+                  {t('checkout.paymentCancelledTitle')}
+                </h3>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[0.625rem] font-sans uppercase tracking-[0.18em] border border-gold-leaf/40 text-gold-leaf bg-gold-leaf/15 font-semibold">
+                  {isArabic ? 'جلسة ملغاة' : 'Session Cancelled'}
+                </span>
+              </div>
+              <p className="font-sans text-[0.8125rem] text-stone leading-relaxed max-w-2xl">
+                {t('checkout.paymentCancelledDesc')}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={dismissPaymentNotice}
+            aria-label={isArabic ? 'إغلاق' : 'Dismiss notice'}
+            className="text-stone hover:text-ink p-1.5 rounded-sm hover:bg-canvas/60 transition-colors"
+          >
+            <span className="text-sm font-bold">✕</span>
+          </button>
+        </div>
+      )}
+
       {/* Progress Stepper */}
       <ProgressStepper
         steps={steps}
@@ -766,7 +863,7 @@ export function CheckoutPage() {
                 </div>
 
                 {/* Card Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" dir="ltr">
                   <Field
                     label={t('checkout.cardholderName')}
                     value={payment.cardholderName}
@@ -776,7 +873,9 @@ export function CheckoutPage() {
                     autoComplete="cc-name"
                     autoCapitalize="words"
                     required
-                    className="sm:col-span-2"
+                    dir="ltr"
+                    style={{ direction: 'ltr', textAlign: 'left' }}
+                    className="sm:col-span-2 text-left"
                   />
                   <Field
                     label={t('checkout.cardNumber')}
@@ -787,7 +886,9 @@ export function CheckoutPage() {
                     autoComplete="cc-number"
                     inputMode="numeric"
                     required
-                    className="sm:col-span-2"
+                    dir="ltr"
+                    style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'isolate' }}
+                    className="sm:col-span-2 text-left font-mono tracking-widest"
                   />
                   <Field
                     label={t('checkout.expiry')}
@@ -798,6 +899,9 @@ export function CheckoutPage() {
                     autoComplete="cc-exp"
                     inputMode="numeric"
                     required
+                    dir="ltr"
+                    style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'isolate' }}
+                    className="text-left font-mono"
                   />
                   <Field
                     label={t('checkout.cvc')}
@@ -808,6 +912,9 @@ export function CheckoutPage() {
                     autoComplete="cc-csc"
                     inputMode="numeric"
                     required
+                    dir="ltr"
+                    style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'isolate' }}
+                    className="text-left font-mono tracking-widest"
                   />
                 </div>
               </div>

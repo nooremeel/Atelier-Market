@@ -195,6 +195,7 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/75 backdrop-blur-sm p-4 transition-all"
+      dir="ltr"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget && state !== 'processing_3ds' && state !== 'redirecting') {
           handleDismiss();
@@ -205,11 +206,14 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
         role="dialog"
         aria-modal="true"
         aria-label="Paymob Payment Vault"
-        className="w-full max-w-md max-h-[92dvh] overflow-y-auto border border-hairline bg-canvas text-ink p-5 sm:p-7 shadow-luxury rounded-sm animate-in fade-in zoom-in-95 duration-200"
+        dir="ltr"
+        lang="en"
+        className="w-full max-w-md max-h-[92dvh] overflow-y-auto border border-hairline bg-canvas text-ink p-5 sm:p-7 shadow-luxury rounded-sm animate-in fade-in zoom-in-95 duration-200 text-left"
+        style={{ direction: 'ltr', textAlign: 'left' }}
       >
         {/* Header Block */}
-        <div className="flex items-start justify-between border-b border-hairline/60 pb-4 mb-4 sm:mb-5">
-          <div>
+        <div className="flex items-start justify-between border-b border-hairline/60 pb-4 mb-4 sm:mb-5" dir="ltr">
+          <div className="text-left">
             <div className="flex items-center gap-2 mb-1">
               <span className="font-sans text-[0.6875rem] tracking-[0.2em] uppercase text-gold-leaf font-semibold">
                 PAYMOB GATEWAY
@@ -226,7 +230,7 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
             </h2>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4" dir="ltr">
             <div className="text-right">
               <span className="block font-sans text-[0.6875rem] uppercase tracking-wider text-stone font-medium">
                 Total to Pay
@@ -252,10 +256,10 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
 
         {/* Optional Legacy iFrame View */}
         {useLegacyIframe && !session.isSimulation ? (
-          <div className="flex flex-col gap-3">
-            <div className="relative min-h-[520px] w-full border border-hairline/70 rounded-sm bg-white dark:bg-canvas shadow-xs">
+          <div className="flex flex-col gap-3" dir="ltr">
+            <div className="relative min-h-[520px] w-full border border-hairline/70 rounded-sm bg-white dark:bg-canvas shadow-xs" dir="ltr" style={{ direction: 'ltr' }}>
               {iframeLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-canvas/90 z-10">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-canvas/90 z-10" dir="ltr">
                   <Spinner />
                   <span className="font-sans text-[0.8125rem] text-stone">
                     Initializing secure Paymob iFrame...
@@ -267,6 +271,9 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
                 title="Paymob Payment Frame"
                 className="w-full h-[520px] rounded-sm border-0"
                 allow="payment"
+                dir="ltr"
+                lang="en"
+                style={{ direction: 'ltr' }}
                 onLoad={() => setIframeLoading(false)}
               />
             </div>
@@ -280,17 +287,18 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
           </div>
         ) : (
           /* Primary Atelier Noir Luxury Card Form */
-          <div>
+          <div dir="ltr">
             {state === 'form' && (
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handlePay(false);
                 }}
-                className="flex flex-col gap-3.5"
+                className="flex flex-col gap-3.5 text-left"
+                dir="ltr"
               >
                 {errorMessage && (
-                  <div className="p-2.5 rounded-sm bg-oxblood/10 border border-oxblood/30 text-oxblood text-xs flex items-center gap-2">
+                  <div className="p-2.5 rounded-sm bg-oxblood/10 border border-oxblood/30 text-oxblood text-xs flex items-center gap-2" dir="ltr">
                     <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -299,7 +307,7 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
                 )}
 
                 <div>
-                  <label className="block font-sans text-[0.6875rem] font-medium text-stone uppercase tracking-wider mb-1">
+                  <label className="block font-sans text-[0.6875rem] font-medium text-stone uppercase tracking-wider mb-1 text-left" dir="ltr">
                     Cardholder Name
                   </label>
                   <input
@@ -307,29 +315,33 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
                     required
                     autoComplete="cc-name"
                     autoCapitalize="words"
+                    dir="ltr"
                     value={cardholderName}
                     onChange={(e) => setCardholderName(e.target.value)}
-                    className="w-full h-11 px-3 border border-hairline/80 rounded-sm bg-silk/30 dark:bg-canvas text-ink font-sans text-sm focus:border-gold-leaf focus:bg-canvas focus:outline-none transition-colors"
+                    className="w-full h-11 px-3 border border-hairline/80 rounded-sm bg-silk/30 dark:bg-canvas text-ink font-sans text-sm text-left focus:border-gold-leaf focus:bg-canvas focus:outline-none transition-colors"
+                    style={{ direction: 'ltr', textAlign: 'left' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-sans text-[0.6875rem] font-medium text-stone uppercase tracking-wider mb-1">
+                  <label className="block font-sans text-[0.6875rem] font-medium text-stone uppercase tracking-wider mb-1 text-left" dir="ltr">
                     Card Number
                   </label>
-                  <div className="relative">
+                  <div className="relative" dir="ltr">
                     <input
                       type="text"
                       inputMode="numeric"
                       autoComplete="cc-number"
                       pattern="[0-9 ]*"
                       required
+                      dir="ltr"
                       value={cardNumber}
                       onChange={handleCardNumberChange}
                       placeholder="4111 •••• •••• ••••"
-                      className="w-full h-11 pl-3 pr-14 border border-hairline/80 rounded-sm bg-silk/30 dark:bg-canvas text-ink font-mono text-sm tracking-widest focus:border-gold-leaf focus:bg-canvas focus:outline-none transition-colors"
+                      className="w-full h-11 pl-3 pr-14 border border-hairline/80 rounded-sm bg-silk/30 dark:bg-canvas text-ink font-mono text-sm tracking-widest text-left focus:border-gold-leaf focus:bg-canvas focus:outline-none transition-colors"
+                      style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'isolate' }}
                     />
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center">
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center pointer-events-none" dir="ltr">
                       <div className="h-5 w-8 rounded-[2px] overflow-hidden flex items-center justify-center border border-hairline/60 bg-white shadow-xs">
                         {brand ? (
                           <img src={brand.icon} alt={brand.label} className="h-full w-full object-contain p-0.5" />
@@ -344,9 +356,9 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3" dir="ltr">
                   <div>
-                    <label className="block font-sans text-[0.6875rem] font-medium text-stone uppercase tracking-wider mb-1">
+                    <label className="block font-sans text-[0.6875rem] font-medium text-stone uppercase tracking-wider mb-1 text-left" dir="ltr">
                       Expiry Date
                     </label>
                     <input
@@ -354,29 +366,33 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
                       inputMode="numeric"
                       autoComplete="cc-exp"
                       required
+                      dir="ltr"
                       placeholder="MM/YY"
                       value={expiry}
                       onChange={handleExpiryChange}
-                      className="w-full h-11 px-3 border border-hairline/80 rounded-sm bg-silk/30 dark:bg-canvas text-ink font-mono text-sm focus:border-gold-leaf focus:bg-canvas focus:outline-none transition-colors"
+                      className="w-full h-11 px-3 border border-hairline/80 rounded-sm bg-silk/30 dark:bg-canvas text-ink font-mono text-sm text-left focus:border-gold-leaf focus:bg-canvas focus:outline-none transition-colors"
+                      style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'isolate' }}
                     />
                   </div>
                   <div>
-                    <label className="block font-sans text-[0.6875rem] font-medium text-stone uppercase tracking-wider mb-1">
+                    <label className="block font-sans text-[0.6875rem] font-medium text-stone uppercase tracking-wider mb-1 text-left" dir="ltr">
                       Security Code (CVV)
                     </label>
-                    <div className="relative">
+                    <div className="relative" dir="ltr">
                       <input
                         type="password"
                         inputMode="numeric"
                         autoComplete="cc-csc"
                         required
+                        dir="ltr"
                         maxLength={4}
                         placeholder="123"
                         value={cvv}
                         onChange={handleCvvChange}
-                        className="w-full h-11 px-3 border border-hairline/80 rounded-sm bg-silk/30 dark:bg-canvas text-ink font-mono text-sm tracking-widest focus:border-gold-leaf focus:bg-canvas focus:outline-none transition-colors"
+                        className="w-full h-11 pl-3 pr-9 border border-hairline/80 rounded-sm bg-silk/30 dark:bg-canvas text-ink font-mono text-sm tracking-widest text-left focus:border-gold-leaf focus:bg-canvas focus:outline-none transition-colors"
+                        style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'isolate' }}
                       />
-                      <svg className="w-3.5 h-3.5 text-stone/60 absolute right-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3.5 h-3.5 text-stone/60 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
@@ -384,7 +400,7 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
                 </div>
 
                 {/* Primary Action Button */}
-                <div className="pt-2 sm:pt-3">
+                <div className="pt-2 sm:pt-3" dir="ltr">
                   <Button
                     type="submit"
                     variant="primary"
