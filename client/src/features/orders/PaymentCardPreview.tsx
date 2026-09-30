@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useI18n } from '../../lib/i18n';
 
 interface PaymentCardPreviewProps {
   cardholderName: string;
@@ -14,7 +13,6 @@ export function PaymentCardPreview({
   expiry,
   className = '',
 }: PaymentCardPreviewProps) {
-  const { isArabic } = useI18n();
 
   // Detect card network based on prefix
   const network = useMemo<'visa' | 'mastercard' | 'amex' | 'default'>(() => {
