@@ -218,6 +218,11 @@ export function PaymobModal({ open, onClose, session, onSuccess, initialCardData
               <span className="font-sans text-[0.6875rem] tracking-[0.2em] uppercase text-gold-leaf font-semibold">
                 PAYMOB GATEWAY
               </span>
+              {session.isSimulation && (
+                <span className="px-1.5 py-0.5 text-[0.625rem] bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-[2px] font-mono uppercase tracking-wider">
+                  Simulation Mode
+                </span>
+              )}
               <span className="inline-flex items-center gap-1 text-[0.6875rem] text-stone">
                 <svg className="w-3 h-3 text-peacock" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

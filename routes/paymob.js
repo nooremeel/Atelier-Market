@@ -195,7 +195,9 @@ router.post('/initiate', isCustomerOrAdmin, async (req, res, next) => {
     await savedOrder.save();
 
     // NOTE: Cart is NOT cleared here; it will be cleared when payment is authorized.
-    // This ensures that if the customer closes the modal, their cart items are preserved.
+    if (paymentSession.isSimulation) {
+      console.warn('[Paymob Initiate] WARNING: Server running in OFFLINE SIMULATION MODE. No requests sent to Paymob. Check that PAYMOB_API_KEY is configured and PAYMOB_SANDBOX_MODE is set to "false" in environment variables.');
+    }
 
     return res.status(200).json({
       success: true,
