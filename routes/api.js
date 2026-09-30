@@ -6,6 +6,7 @@ const adminRoutes   = require('./admin');
 const extendedRoutes = require('./extended');
 const sellerRoutes   = require('./seller');
 const discountRoutes = require('./discount');
+const paymobRoutes   = require('./paymob');
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ router.get('/csrf-token', meta.getCsrfToken);
 router.get('/auth/me', meta.getMe);
 router.use('/auth', authRoutes);
 router.use('/seller', sellerRoutes);
+router.use('/paymob', paymobRoutes);
 router.use('/', shopRoutes);
 router.use('/', adminRoutes.routes);
 router.use('/', discountRoutes);

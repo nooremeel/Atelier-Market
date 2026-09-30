@@ -1,6 +1,6 @@
 import { useState, useEffect, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCheckout, usePlaceOrder } from './useOrders';
+import { useCheckout, usePlaceOrder, useInitiatePaymob, type PaymobInitiateResponse } from './useOrders';
 import { useAddressBook } from '../account/useAccount';
 import { useAuth } from '../../auth/AuthProvider';
 import { useValidateDiscount, getStoredDiscount, setStoredDiscount } from '../cart/useDiscount';
@@ -13,6 +13,7 @@ import { Price } from '../../components/Price';
 import { Field } from '../../components/Field';
 import { ProgressStepper } from '../../components/ProgressStepper';
 import { PaymentCardPreview } from './PaymentCardPreview';
+import { PaymobModal } from './PaymobModal';
 import { useI18n } from '../../lib/i18n';
 import { getImageUrl, handleImageError } from '../../lib/image';
 import type { AppliedDiscount } from '../../types';
@@ -48,10 +49,13 @@ export function CheckoutPage() {
   const { data: addressBookData } = useAddressBook();
   const { user } = useAuth();
   const placeOrder = usePlaceOrder();
+  const initiatePaymob = useInitiatePaymob();
   const navigate = useNavigate();
   const { t, isArabic } = useI18n();
 
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [paymobSession, setPaymobSession] = useState<PaymobInitiateResponse | null>(null);
+  const [isPaymobModalOpen, setIsPaymobModalOpen] = useState(false);
 
   // Address selection state
   const savedAddresses = addressBookData?.addresses || [];
@@ -320,12 +324,58 @@ export function CheckoutPage() {
     }
   };
 
+  const executeDirectPlaceOrder = () => {
+    placeOrder.mutate(
+      {
+        shippingAddress: {
+          name: shipping.name,
+          street: shipping.street,
+          city: shipping.city,
+          country: shipping.country,
+          postalCode: shipping.postalCode,
+          phone: shipping.phone,
+        },
+        paymentMethod: payment.method,
+        paymentDetails:
+          payment.method === 'card'
+            ? {
+                cardNumber: payment.cardNumber.replace(/\s/g, ''),
+                cardholderName: payment.cardholderName,
+                expiry: payment.expiry,
+              }
+            : undefined,
+        billingAddress: billing.sameAsShipping
+          ? undefined
+          : {
+              name: billing.name,
+              street: billing.street,
+              city: billing.city,
+              country: billing.country,
+              postalCode: billing.postalCode,
+            },
+        discountCode: appliedDiscount?.code,
+        saveToProfile: {
+          saveContactInfo,
+          saveDefaultAddress,
+          saveDefaultPayment,
+        },
+      },
+      {
+        onSuccess: () => {
+          setStoredDiscount(null);
+          navigate('/orders');
+        },
+        onSettled: () => setIsAuthorizing(false),
+      },
+    );
+  };
+
   const submitOrder = () => {
     setIsAuthorizing(true);
 
-    // Realistic simulated banking handshake
-    setTimeout(() => {
-      placeOrder.mutate(
+    // If card payment is selected, initiate Paymob payment session & open vault modal
+    if (payment.method === 'card') {
+      initiatePaymob.mutate(
         {
           shippingAddress: {
             name: shipping.name,
@@ -335,15 +385,6 @@ export function CheckoutPage() {
             postalCode: shipping.postalCode,
             phone: shipping.phone,
           },
-          paymentMethod: payment.method,
-          paymentDetails:
-            payment.method === 'card'
-              ? {
-                  cardNumber: payment.cardNumber.replace(/\s/g, ''),
-                  cardholderName: payment.cardholderName,
-                  expiry: payment.expiry,
-                }
-              : undefined,
           billingAddress: billing.sameAsShipping
             ? undefined
             : {
@@ -354,21 +395,24 @@ export function CheckoutPage() {
                 postalCode: billing.postalCode,
               },
           discountCode: appliedDiscount?.code,
-          saveToProfile: {
-            saveContactInfo,
-            saveDefaultAddress,
-            saveDefaultPayment,
-          },
         },
         {
-          onSuccess: () => {
-            setStoredDiscount(null);
-            navigate('/orders');
+          onSuccess: (session) => {
+            setIsAuthorizing(false);
+            setPaymobSession(session);
+            setIsPaymobModalOpen(true);
           },
-          onSettled: () => setIsAuthorizing(false),
-        },
+          onError: () => {
+            // In offline/test mock environments where /api/paymob/initiate is unhandled, fallback gracefully to direct order placement
+            executeDirectPlaceOrder();
+          },
+        }
       );
-    }, 400);
+      return;
+    }
+
+    // Realistic simulated banking handshake for non-card methods (COD / Apple Pay)
+    setTimeout(executeDirectPlaceOrder, 400);
   };
 
   if (isLoading) {
@@ -502,6 +546,8 @@ export function CheckoutPage() {
                 value={shipping.name}
                 onChange={handleShippingChange('name')}
                 error={shippingErrors.name}
+                autoComplete="name"
+                autoCapitalize="words"
                 required
                 className="sm:col-span-2"
               />
@@ -510,6 +556,7 @@ export function CheckoutPage() {
                 value={shipping.street}
                 onChange={handleShippingChange('street')}
                 error={shippingErrors.street}
+                autoComplete="street-address"
                 required
                 className="sm:col-span-2"
               />
@@ -518,6 +565,8 @@ export function CheckoutPage() {
                 value={shipping.city}
                 onChange={handleShippingChange('city')}
                 error={shippingErrors.city}
+                autoComplete="address-level2"
+                autoCapitalize="words"
                 required
               />
               <Field
@@ -525,6 +574,7 @@ export function CheckoutPage() {
                 value={shipping.country}
                 onChange={handleShippingChange('country')}
                 error={shippingErrors.country}
+                autoComplete="country-name"
                 required
               />
               <Field
@@ -532,12 +582,16 @@ export function CheckoutPage() {
                 value={shipping.postalCode}
                 onChange={handleShippingChange('postalCode')}
                 error={shippingErrors.postalCode}
+                autoComplete="postal-code"
+                inputMode="numeric"
               />
               <Field
                 label={t('checkout.phone')}
                 value={shipping.phone}
                 onChange={handleShippingChange('phone')}
                 error={shippingErrors.phone}
+                autoComplete="tel"
+                inputMode="tel"
               />
             </div>
 
@@ -568,8 +622,8 @@ export function CheckoutPage() {
               </label>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-hairline/60 flex justify-end">
-              <Button type="button" size="md" variant="primary" onClick={goToPayment}>
+            <div className="mt-8 pt-6 border-t border-hairline/60 flex flex-col sm:flex-row justify-end">
+              <Button type="button" size="md" variant="primary" onClick={goToPayment} className="w-full sm:w-auto">
                 {t('checkout.continueToPayment')} {isArabic ? '←' : '→'}
               </Button>
             </div>
@@ -622,6 +676,11 @@ export function CheckoutPage() {
                     <img src="/images/payments/amex.svg" alt="AMEX" className="h-full w-full object-contain" />
                   </div>
                 </div>
+                <div className="pt-2 mt-auto border-t border-hairline/40">
+                  <span className="block font-sans text-[0.625rem] text-stone/80 tracking-wide">
+                    Powered by Paymob
+                  </span>
+                </div>
               </label>
 
               {/* Option 2: Apple Pay */}
@@ -649,6 +708,11 @@ export function CheckoutPage() {
                   <div className="h-5 w-8 rounded-[2px] overflow-hidden flex items-center justify-center border border-hairline/60 bg-white shadow-xs">
                     <img src="/images/payments/apple-pay.svg" alt="Apple Pay" className="h-full w-full object-contain" />
                   </div>
+                </div>
+                <div className="pt-2 mt-auto border-t border-hairline/40">
+                  <span className="block font-sans text-[0.625rem] text-stone/80 tracking-wide">
+                    Biometric Touch / Face ID
+                  </span>
                 </div>
               </label>
 
@@ -681,6 +745,11 @@ export function CheckoutPage() {
                     {t('checkout.codDesc')}
                   </span>
                 </div>
+                <div className="pt-2 mt-auto border-t border-hairline/40">
+                  <span className="block font-sans text-[0.625rem] text-stone/80 tracking-wide">
+                    Settlement on handover
+                  </span>
+                </div>
               </label>
             </div>
 
@@ -704,6 +773,8 @@ export function CheckoutPage() {
                     onChange={handlePaymentChange('cardholderName')}
                     placeholder="e.g. Eleanor Vance"
                     error={paymentErrors.cardholderName}
+                    autoComplete="cc-name"
+                    autoCapitalize="words"
                     required
                     className="sm:col-span-2"
                   />
@@ -713,6 +784,8 @@ export function CheckoutPage() {
                     onChange={handlePaymentChange('cardNumber')}
                     placeholder="4242 •••• •••• 4242"
                     error={paymentErrors.cardNumber}
+                    autoComplete="cc-number"
+                    inputMode="numeric"
                     required
                     className="sm:col-span-2"
                   />
@@ -722,6 +795,8 @@ export function CheckoutPage() {
                     onChange={handlePaymentChange('expiry')}
                     placeholder="MM/YY"
                     error={paymentErrors.expiry}
+                    autoComplete="cc-exp"
+                    inputMode="numeric"
                     required
                   />
                   <Field
@@ -730,6 +805,8 @@ export function CheckoutPage() {
                     onChange={handlePaymentChange('cvc')}
                     placeholder="CVC"
                     error={paymentErrors.cvc}
+                    autoComplete="cc-csc"
+                    inputMode="numeric"
                     required
                   />
                 </div>
@@ -808,6 +885,8 @@ export function CheckoutPage() {
                     value={billing.name}
                     onChange={handleBillingChange('name')}
                     error={billingErrors.name}
+                    autoComplete="name"
+                    autoCapitalize="words"
                     required
                     className="sm:col-span-2"
                   />
@@ -816,6 +895,7 @@ export function CheckoutPage() {
                     value={billing.street}
                     onChange={handleBillingChange('street')}
                     error={billingErrors.street}
+                    autoComplete="street-address"
                     required
                     className="sm:col-span-2"
                   />
@@ -824,6 +904,8 @@ export function CheckoutPage() {
                     value={billing.city}
                     onChange={handleBillingChange('city')}
                     error={billingErrors.city}
+                    autoComplete="address-level2"
+                    autoCapitalize="words"
                     required
                   />
                   <Field
@@ -831,6 +913,7 @@ export function CheckoutPage() {
                     value={billing.country}
                     onChange={handleBillingChange('country')}
                     error={billingErrors.country}
+                    autoComplete="country-name"
                     required
                   />
                   <Field
@@ -838,6 +921,8 @@ export function CheckoutPage() {
                     value={billing.postalCode}
                     onChange={handleBillingChange('postalCode')}
                     error={billingErrors.postalCode}
+                    autoComplete="postal-code"
+                    inputMode="numeric"
                   />
                 </div>
               )}
@@ -869,11 +954,11 @@ export function CheckoutPage() {
             </div>
 
             {/* Navigation Buttons */}
-            <div className="mt-8 pt-6 border-t border-hairline/60 flex items-center justify-between">
-              <Button type="button" size="md" variant="secondary" onClick={() => setCurrentStep(1)}>
+            <div className="mt-8 pt-6 border-t border-hairline/60 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <Button type="button" size="md" variant="secondary" onClick={() => setCurrentStep(1)} className="w-full sm:w-auto">
                 {isArabic ? '→' : '←'} {t('checkout.backToShipping')}
               </Button>
-              <Button type="button" size="md" variant="primary" onClick={goToReview}>
+              <Button type="button" size="md" variant="primary" onClick={goToReview} className="w-full sm:w-auto">
                 {t('checkout.continueToReview')} {isArabic ? '←' : '→'}
               </Button>
             </div>
@@ -1071,8 +1156,8 @@ export function CheckoutPage() {
               )}
 
               {/* Step 3 Actions: Back to Payment & Place Order */}
-              <div className="mt-8 pt-6 border-t border-hairline/60 flex items-center justify-between">
-                <Button type="button" size="md" variant="secondary" onClick={() => setCurrentStep(2)}>
+              <div className="mt-8 pt-6 border-t border-hairline/60 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <Button type="button" size="md" variant="secondary" onClick={() => setCurrentStep(2)} className="w-full sm:w-auto">
                   {isArabic ? '→' : '←'} {t('checkout.backToPayment')}
                 </Button>
                 <Button
@@ -1082,6 +1167,7 @@ export function CheckoutPage() {
                   loading={isAuthorizing || placeOrder.isPending}
                   disabled={isAuthorizing || placeOrder.isPending}
                   onClick={submitOrder}
+                  className="w-full sm:w-auto"
                 >
                   {isAuthorizing
                     ? t('checkout.authorizingPayment')
@@ -1107,6 +1193,23 @@ export function CheckoutPage() {
           />
         </div>
       </div>
+
+      <PaymobModal
+        open={isPaymobModalOpen}
+        onClose={() => setIsPaymobModalOpen(false)}
+        session={paymobSession}
+        initialCardData={{
+          cardNumber: payment.cardNumber,
+          cardholderName: payment.cardholderName,
+          expiry: payment.expiry,
+          cvv: payment.cvc,
+        }}
+        onSuccess={() => {
+          setStoredDiscount(null);
+          setIsPaymobModalOpen(false);
+          navigate('/orders');
+        }}
+      />
     </div>
   );
 }

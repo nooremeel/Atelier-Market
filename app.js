@@ -145,7 +145,16 @@ app.use((req, res, next) => {
         });
 
 });
-app.use(csrfProtection);
+// CSRF Protection: Exempt payment webhooks and browser callbacks
+app.use((req, res, next) => {
+    if (
+        req.path === '/api/paymob/webhook' || req.originalUrl?.startsWith('/api/paymob/webhook') ||
+        req.path === '/api/paymob/callback' || req.originalUrl?.startsWith('/api/paymob/callback')
+    ) {
+        return next();
+    }
+    csrfProtection(req, res, next);
+});
 app.use(flash());
 
 app.use('/api', require('./routes/api'));

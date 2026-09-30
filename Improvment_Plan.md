@@ -24,6 +24,7 @@ Freelance clients, startup founders, and agency leads evaluate developer portfol
 | **Phase 4** | **Product Variants & Options (Size / Scent / Material)**| 💎 High (Shows Enterprise Catalog Architecture)| Completed ✅ |
 | **Phase 5** | **Slide-Over Mini Cart & Free Shipping Progress Meter**| ✨ High (E-Commerce UX & Conversion Magic) | Completed ✅ |
 | **Phase 6** | **Production Hardening, SEO (JSON-LD), & Test Stability**| 🛡️ High (Shows CTO-Level Clean Code Standards)| Completed ✅ |
+| **Phase 7** | **Paymob Payment Integration & Luxury Vault** | 💳 Critical (Commercial Financial Integration) | Completed ✅ *(7.4 Deferred to Live Deploy)* |
 
 ---
 
@@ -225,6 +226,83 @@ Ensure technical recruiters, lead engineers, and CTOs inspecting the repository 
 
 ---
 
+## 📌 Phase 7: Paymob Refinement & Checkout UX (Next Session Agenda 📋)
+
+### Goal
+Polish the Paymob payment integration from functional to seamless, ensuring instant visual feedback, refined proportions, robust redirection handling, and a clean demo presentation.
+
+### 7.1 Paymob Processing & Loading Visualization (Completed ✅)
+* **Status**: Implemented & Verified with automated tests.
+* **Accomplishments**:
+  * Swapped the clunky external iframe for our custom Atelier Noir luxury card form as the primary checkout interface, keeping Paymob as the underlying financial processor.
+  * Added `POST /api/paymob/pay` and `processDirectCardPayment` in [`services/paymobService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/paymobService.js) to securely submit card details directly to Paymob's payment rail.
+  * When "Secure Payment" is clicked, [`PaymobModal.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/PaymobModal.tsx) provides instantaneous visual feedback with an animated luxury spinner, active progress bar, and real-time status transitions (`Connecting to Paymob Financial Rail` $\to$ `Transferring to 3D-Secure`).
+  * Seamlessly handles both 3DS bank redirection and immediate direct authorization with zero silent dead time. Added a discreet toggle allowing developers to inspect the raw hosted iframe if desired.
+* **Relevant Files**:
+  * [`services/paymobService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/paymobService.js)
+  * [`routes/paymob.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/routes/paymob.js)
+  * [`client/src/features/orders/useOrders.ts`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/useOrders.ts)
+  * [`client/src/features/orders/PaymobModal.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/PaymobModal.tsx)
+  * [`test/api/paymob.test.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/paymob.test.js)
+
+### 7.2 Iframe Container Dimensions & Aesthetic Optimization (Completed ✅)
+* **Status**: Implemented & Verified in [`PaymobModal.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/PaymobModal.tsx).
+* **Accomplishments**:
+  * Fine-tuned iframe container height down to `520px` to match the exact Paymob MIGS/Accept card form footprint without wasted vertical whitespace.
+  * Styled container with Atelier Noir luxury design tokens (`hairline/70`, `bg-canvas`, `shadow-xs`) and integrated luxury loading spinner while the external frame mounts.
+  * Added instant fallback toggle allowing inspectors to compare the legacy iframe with the custom direct form.
+
+### 7.3 Mobile UI/UX Audit & Refinement (Completed ✅)
+* **Status**: Implemented & Verified with automated tests (100% passing across 251 tests).
+* **Accomplishments**:
+  * Added `inputMode="numeric"` and `inputMode="tel"` across checkout form fields (Card Number, Expiry, CVV, Postal Code, Phone) so mobile devices (iOS Safari & Android Chrome) immediately present the appropriate specialized numerical keypads instead of full text keyboards.
+  * Configured standard W3C `autoComplete` attributes across all 3 steps (`name`, `street-address`, `address-level2`, `country-name`, `postal-code`, `tel`, `cc-name`, `cc-number`, `cc-exp`, `cc-csc`) and `autoCapitalize="words"`, enabling native browser 1-tap autofill on mobile viewports.
+  * Connected `initialCardData` prop to [`PaymobModal.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/PaymobModal.tsx) so card details entered on Step 2 automatically pre-populate the modal, eliminating redundant re-typing on small touchscreens.
+  * Added `max-h-[92dvh] overflow-y-auto` and responsive padding (`p-5 sm:p-7`) to the modal dialog so virtual software keyboards never obscure the primary submit button.
+  * Optimized touch targets: enlarged the modal dismissal button to 44x44px and input heights to 44px (`h-11`).
+  * Updated checkout action buttons across all three steps in [`CheckoutPage.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/CheckoutPage.tsx) with `w-full sm:w-auto` and `flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3`, providing comfortable, thumb-friendly full-width CTAs on mobile viewports.
+* **Relevant Files**:
+  * [`client/src/features/orders/PaymobModal.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/PaymobModal.tsx)
+  * [`client/src/features/orders/CheckoutPage.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/CheckoutPage.tsx)
+  * [`client/src/features/orders/CheckoutPage.test.tsx`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/features/orders/CheckoutPage.test.tsx)
+
+### 7.4 Paymob Dashboard Callback URL (Deferred to Final Deployment Step ⏳)
+* **Status**: Deferred to Final Deployment Step per user preference.
+* **Details**:
+  * The store's backend already has `/api/paymob/callback` fully implemented to handle both GET and POST browser redirections from Paymob with HMAC security and CSRF exemption.
+  * In local development, our live reconciliation (`inquirePaymobOrder` in 7.5) automatically syncs order status and cart clearance without requiring localhost URLs in the dashboard.
+  * When ready for production deployment, the final step will be to enter the production domain callback (`https://your-domain.com/api/paymob/callback`) into the Paymob Dashboard under Payment Integrations.
+
+### 7.5 Cart Clearance & Order Fulfillment Sync (Completed ✅)
+* **Status**: Implemented & Verified with automated tests.
+* **Accomplishments**:
+  * Implemented `inquirePaymobOrder` in [`services/paymobService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/paymobService.js) using Paymob's live `POST /ecommerce/orders/transaction_inquiry` endpoint.
+  * Added `reconcilePendingPaymobOrders` in [`controllers/shop.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/shop.js) hooked into `getOrders` and `getCart`.
+  * Even if the user presses the browser's Back button from Paymob without a webhook tunnel on localhost, the store immediately asks Paymob for the order's live status, confirms the order, decrements inventory, and empties the customer's cart automatically.
+* **Relevant Files**:
+  * [`services/paymobService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/paymobService.js)
+  * [`controllers/shop.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/shop.js)
+  * [`test/api/orders.test.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/orders.test.js)
+  * [`test/api/paymob.test.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/paymob.test.js)
+
+### 7.6 Demo Customer Order History Cleanup (Completed ✅)
+* **Status**: Implemented & Verified in MongoDB Atlas and automated test suites.
+* **Accomplishments**:
+  * Cleaned up 15 orphaned, draft, and test orders accumulated during development for `sara@example.com` in MongoDB Atlas.
+  * Reset Sara's active cart to an empty state so she is immediately primed for 1-click live checkout demonstrations.
+  * Seeded 3 pristine, luxury showroom orders showcasing diverse commercial delivery tracker milestones:
+    1. **Order #1 (Crafting in Studio)**: `ARX-829104-BH` via *Aramex White-Glove Express* ($252.00) with active stage 2 craftsmanship notes.
+    2. **Order #2 (Dispatched & In Transit)**: `DHL-918234-BH` via *DHL Express Worldwide* ($175.00) with customs clearance and regional sorting milestones.
+    3. **Order #3 (Delivered)**: `FDX-441209-BH` via *FedEx Priority White-Glove* ($437.75) showcasing the full 4-stage delivery timeline with handover notes at *12 Al Fateh Avenue, Manama*.
+  * Created reusable standalone maintenance script [`scripts/cleanSaraOrders.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/scripts/cleanSaraOrders.js) and wired it to `npm run db:seed-orders`.
+  * Updated [`server.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/server.js) `seedOrders` so any fresh database deployment boots with these same authentic timeline records.
+* **Relevant Files**:
+  * [`scripts/cleanSaraOrders.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/scripts/cleanSaraOrders.js)
+  * [`server.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/server.js)
+  * [`package.json`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/package.json)
+
+---
+
 ## 🛠️ Step-by-Step Execution Order
 
 To implement these improvements systematically without breaking existing tests, follow this recommended sequence:
@@ -236,6 +314,7 @@ flowchart TD
     P3 --> P5[Phase 5: Slide-Over Cart Drawer & Shipping Meter]
     P5 --> P4[Phase 4: Product Variants & Custom Options]
     P4 --> P6[Phase 6: Schema.org SEO, Security & Vitest Optimization]
+    P6 --> P7[Phase 7: Paymob Polish, Redirection, & UX Optimization]
 ```
 
 1. **Step 1 (Day 1)**: Implement 1-Click Demo Login on `/login` and update `README.md` to highlight business value.
@@ -244,3 +323,4 @@ flowchart TD
 4. **Step 4 (Day 4)**: Build the slide-over mini cart drawer with free shipping progress bar.
 5. **Step 5 (Day 5)**: Add product variants selector (if multiple sizes/scents exist).
 6. **Step 6 (Day 6)**: Configure `vitest.config.mjs`, inject Schema.org JSON-LD, and add session secret security.
+7. **Step 7 (Day 7)**: Paymob refinement: loading visualization, iframe height optimization, mobile audit, redirect callback with status toasts, cart clearing fallback, and demo order cleanup.

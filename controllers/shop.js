@@ -1,6 +1,8 @@
 const Product = require('../models/product');
 const Order = require('../models/order');
 const Discount = require('../models/discount');
+const User = require('../models/user');
+const paymobService = require('../services/paymobService');
 const path = require('path');
 const { generateInvoicePdf } = require('../util/invoiceGenerator');
 const { validationResult } = require('express-validator');
@@ -154,11 +156,72 @@ function serializeCart(user) {
   return { items, totalItems, totalPrice: Math.round(totalPrice * 100) / 100 };
 }
 
-exports.getCart = (req, res, next) => {
-  req.user
-    .populate('cart.items.productId')
-    .then((user) => res.json(serializeCart(user)))
-    .catch((err) => next(new Error(err)));
+async function reconcilePendingPaymobOrders(userId) {
+  if (!userId) return;
+  try {
+    const pendingOrders = await Order.find({
+      'user.userId': userId,
+      paymentMethod: 'card',
+      paymentStatus: 'unpaid',
+      status: 'pending',
+      paymentReference: { $regex: /^PAYMOB-ORD-/ },
+    });
+
+    for (const pending of pendingOrders) {
+      const match = pending.paymentReference.match(/^PAYMOB-ORD-(\d+)/);
+      if (match && match[1]) {
+        const inquiry = await paymobService.inquirePaymobOrder(match[1]);
+        if (inquiry.isPaid) {
+          console.log(`[Auto-Reconcile] Order ${pending._id} verified as PAID by Paymob.`);
+          pending.paymentStatus = 'paid';
+          pending.status = 'confirmed';
+          pending.paymentReference = `PAYMOB-TXN-${inquiry.transactionId || match[1]}`;
+          pending.timeline.push({
+            status: 'confirmed',
+            timestamp: new Date(),
+            note: `Payment verified and reconciled with Paymob (Txn #${inquiry.transactionId || match[1]}).`,
+          });
+
+          // Decrement inventory stock
+          for (const item of pending.products) {
+            const prodId = item.productData?._id;
+            const variantId = item.variant?._id;
+            if (prodId && variantId) {
+              await Product.updateOne(
+                { _id: prodId, 'variants._id': variantId },
+                { $inc: { 'variants.$.stock': -item.quantity, stock: -item.quantity } }
+              );
+            } else if (prodId) {
+              await Product.findByIdAndUpdate(prodId, { $inc: { stock: -item.quantity } });
+            }
+          }
+
+          if (pending.discount?.code) {
+            await Discount.updateOne({ code: pending.discount.code }, { $inc: { usedCount: 1 } });
+          }
+
+          await pending.save();
+
+          const user = await User.findById(userId);
+          if (user) {
+            await user.clearCart();
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Auto-Reconcile Warning]:', err.message);
+  }
+}
+
+exports.getCart = async (req, res, next) => {
+  try {
+    await reconcilePendingPaymobOrders(req.user._id);
+    const user = await req.user.populate('cart.items.productId');
+    return res.json(serializeCart(user));
+  } catch (err) {
+    next(new Error(err));
+  }
 };
 
 exports.postCart = async (req, res, next) => {
@@ -560,11 +623,18 @@ exports.postOrder = async (req, res, next) => {
   }
 };
 
-exports.getOrders = (req, res, next) => {
-  Order.find({ 'user.userId': req.user._id })
-    .sort({ _id: -1 })
-    .then((orders) => res.json({ orders }))
-    .catch((err) => next(new Error(err)));
+exports.getOrders = async (req, res, next) => {
+  try {
+    await reconcilePendingPaymobOrders(req.user._id);
+    const orders = await Order.find({
+      'user.userId': req.user._id,
+      $nor: [{ paymentMethod: 'card', paymentStatus: 'unpaid', status: 'pending' }],
+    }).sort({ _id: -1 });
+
+    return res.json({ orders });
+  } catch (err) {
+    next(new Error(err));
+  }
 };
 
 exports.getInvoice = (req, res, next) => {

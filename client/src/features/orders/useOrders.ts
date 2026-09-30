@@ -59,3 +59,108 @@ export function usePlaceOrder() {
     },
   });
 }
+
+export interface PaymobInitiatePayload {
+  shippingAddress: {
+    name: string;
+    street: string;
+    city: string;
+    country: string;
+    postalCode: string;
+    phone: string;
+  };
+  billingAddress?: {
+    name: string;
+    street: string;
+    city: string;
+    country: string;
+    postalCode: string;
+  };
+  discountCode?: string;
+  carrier?: string;
+}
+
+export interface PaymobInitiateResponse {
+  success: boolean;
+  orderId: string;
+  totalPrice: number;
+  currency: string;
+  iframeUrl: string;
+  paymentToken: string;
+  isSimulation: boolean;
+}
+
+export function useInitiatePaymob() {
+  const { notify } = useToast();
+  return useMutation({
+    mutationFn: (payload: PaymobInitiatePayload) =>
+      apiSend<PaymobInitiateResponse>('/api/paymob/initiate', 'POST', payload),
+    onError: (err: Error) => {
+      queryClient.invalidateQueries({ queryKey: ['checkout'] });
+      notify(err.message || 'Payment initiation failed', 'error');
+    },
+  });
+}
+
+export function useSimulatePaymobSuccess() {
+  const { notify } = useToast();
+  return useMutation({
+    mutationFn: (orderId: string) =>
+      apiSend<{ success: boolean; order: Order }>('/api/paymob/simulate-success', 'POST', { orderId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['checkout'] });
+      notify('Payment authorized via Paymob', 'success');
+    },
+    onError: (err: Error) => {
+      notify(err.message || 'Payment authorization failed', 'error');
+    },
+  });
+}
+
+export function useCancelPaymobOrder() {
+  return useMutation({
+    mutationFn: (orderId: string) =>
+      apiSend<{ success: boolean }>('/api/paymob/cancel', 'POST', { orderId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['checkout'] });
+    },
+  });
+}
+
+export interface PaymobDirectPaymentPayload {
+  orderId: string;
+  paymentToken: string;
+  card: {
+    number: string;
+    holderName: string;
+    expiryMonth: string;
+    expiryYear: string;
+    cvv: string;
+  };
+}
+
+export interface PaymobDirectPaymentResponse {
+  success: boolean;
+  requires3ds?: boolean;
+  redirectionUrl?: string;
+  orderId?: string;
+  message?: string;
+}
+
+export function useProcessPaymobDirectPayment() {
+  const { notify } = useToast();
+  return useMutation({
+    mutationFn: (payload: PaymobDirectPaymentPayload) =>
+      apiSend<PaymobDirectPaymentResponse>('/api/paymob/pay', 'POST', payload),
+    onError: (err: Error) => {
+      notify(err.message || 'Payment processing failed', 'error');
+    },
+  });
+}
+
+
+

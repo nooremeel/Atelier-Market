@@ -487,24 +487,66 @@ async function seedOrders(uids) {
   const jamesId = uids['james@example.com'];
   const aishaId = uids['aisha@example.com'];
 
+  const now = new Date();
   const orders = [
     {
       user:  { email: 'sara@example.com',  userId: saraId,  name: 'Sara Hassan' },
       products: [
         { productData: products[0], quantity: 1 },
-        { productData: products[4], quantity: 2 },
+        { productData: products[4], quantity: 1 },
       ],
-      totalPrice: products[0].price + products[4].price * 2,
-      status: 'delivered', paymentStatus: 'paid',
-      shippingAddress: { name: 'Sara Hassan', street: '12 Al Fateh Avenue', city: 'Manama', country: 'Bahrain', postalCode: '316' },
-      trackingNumber: 'BH-2026-00142',
+      totalPrice: products[0].price + products[4].price,
+      status: 'crafting', paymentStatus: 'paid', paymentMethod: 'card',
+      shippingAddress: { name: 'Sara Hassan', street: '12 Al Fateh Avenue, Apt 4B', city: 'Manama', country: 'Bahrain', postalCode: '316' },
+      carrier: 'Aramex White-Glove Express',
+      trackingNumber: 'ARX-829104-BH',
+      estimatedDeliveryDate: new Date(now.getTime() + 4 * 24 * 3600 * 1000),
+      timeline: [
+        { status: 'confirmed', timestamp: new Date(now.getTime() - 4 * 3600 * 1000), note: 'Order confirmed and payment secured via Paymob Vault.' },
+        { status: 'crafting', timestamp: new Date(now.getTime() - 1 * 3600 * 1000), note: 'Artisan studio has commenced hand-chiseling and mineral patina finishing.' },
+      ],
+    },
+    {
+      user:  { email: 'sara@example.com', userId: saraId, name: 'Sara Hassan' },
+      products: [
+        { productData: products[2] || products[0], quantity: 1 },
+      ],
+      totalPrice: (products[2] || products[0]).price,
+      status: 'shipped', paymentStatus: 'paid', paymentMethod: 'card',
+      shippingAddress: { name: 'Sara Hassan', street: '12 Al Fateh Avenue, Apt 4B', city: 'Manama', country: 'Bahrain', postalCode: '316' },
+      carrier: 'DHL Express Worldwide',
+      trackingNumber: 'DHL-918234-BH',
+      estimatedDeliveryDate: new Date(now.getTime() + 24 * 3600 * 1000),
+      timeline: [
+        { status: 'confirmed', timestamp: new Date(now.getTime() - 48 * 3600 * 1000), note: 'Order confirmed and payment authorized.' },
+        { status: 'crafting', timestamp: new Date(now.getTime() - 30 * 3600 * 1000), note: 'Archival leather treatment and hand-carved bone clasp fitted.' },
+        { status: 'shipped', timestamp: new Date(now.getTime() - 8 * 3600 * 1000), note: 'Dispatched via DHL Express Worldwide. Package has cleared regional sorting facility.' },
+      ],
+    },
+    {
+      user:  { email: 'sara@example.com', userId: saraId, name: 'Sara Hassan' },
+      products: [
+        { productData: products[3] || products[1], quantity: 1 },
+      ],
+      totalPrice: (products[3] || products[1]).price,
+      status: 'delivered', paymentStatus: 'paid', paymentMethod: 'card',
+      shippingAddress: { name: 'Sara Hassan', street: '12 Al Fateh Avenue, Apt 4B', city: 'Manama', country: 'Bahrain', postalCode: '316' },
+      carrier: 'FedEx Priority White-Glove',
+      trackingNumber: 'FDX-441209-BH',
+      estimatedDeliveryDate: new Date(now.getTime() - 24 * 3600 * 1000),
+      timeline: [
+        { status: 'confirmed', timestamp: new Date(now.getTime() - 6 * 24 * 3600 * 1000), note: 'Order placed and payment authorized.' },
+        { status: 'crafting', timestamp: new Date(now.getTime() - 4 * 24 * 3600 * 1000), note: 'Hand-hammered brass relief completed in Najd atelier.' },
+        { status: 'shipped', timestamp: new Date(now.getTime() - 2 * 24 * 3600 * 1000), note: 'Package handed over to FedEx Priority courier.' },
+        { status: 'delivered', timestamp: new Date(now.getTime() - 1 * 24 * 3600 * 1000), note: 'Delivered directly into patron\'s hands at 12 Al Fateh Avenue, Manama.' },
+      ],
     },
     {
       user:  { email: 'james@example.com', userId: jamesId, name: 'James Elliot' },
       products: [
-        { productData: products[8], quantity: 1 },
+        { productData: products[8] || products[0], quantity: 1 },
       ],
-      totalPrice: products[8].price,
+      totalPrice: (products[8] || products[0]).price,
       status: 'shipped', paymentStatus: 'paid',
       shippingAddress: { name: 'James Elliot', street: '47 Westbourne Grove', city: 'London', country: 'United Kingdom', postalCode: 'W11 2SE' },
       trackingNumber: 'UK-2026-08871',
@@ -512,21 +554,11 @@ async function seedOrders(uids) {
     {
       user:  { email: 'aisha@example.com', userId: aishaId, name: 'Aisha Karimi' },
       products: [
-        { productData: products[13], quantity: 1 },
-        { productData: products[14], quantity: 1 },
+        { productData: products[13] || products[0], quantity: 1 },
       ],
-      totalPrice: products[13].price + products[14].price,
+      totalPrice: (products[13] || products[0]).price,
       status: 'confirmed', paymentStatus: 'paid',
       shippingAddress: { name: 'Aisha Karimi', street: 'Al Olaya District, Block 7', city: 'Riyadh', country: 'Saudi Arabia', postalCode: '12213' },
-    },
-    {
-      user:  { email: 'sara@example.com', userId: saraId, name: 'Sara Hassan' },
-      products: [
-        { productData: products[16], quantity: 1 },
-      ],
-      totalPrice: products[16].price,
-      status: 'pending', paymentStatus: 'paid',
-      shippingAddress: { name: 'Sara Hassan', street: '12 Al Fateh Avenue', city: 'Manama', country: 'Bahrain', postalCode: '316' },
     },
   ];
 
