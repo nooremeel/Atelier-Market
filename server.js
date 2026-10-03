@@ -756,13 +756,18 @@ async function backfillProductVariants() {
   await mongoose.connect(mongoUri);
   console.log('[DB] MongoDB connected successfully.');
 
-  const uids = await seedUsers();
-  await seedProducts(uids);
-  await backfillProductVariants();
-  await seedReviews(uids);
-  await seedOrders(uids);
-  await backfillOrderTracking();
-  await seedDiscounts();
+  if (process.env.DEMO_MODE === 'true') {
+    console.log('[Demo] DEMO_MODE enabled — bootstrapping and resetting demo seed data...');
+    const uids = await seedUsers();
+    await seedProducts(uids);
+    await backfillProductVariants();
+    await seedReviews(uids);
+    await seedOrders(uids);
+    await backfillOrderTracking();
+    await seedDiscounts();
+  } else {
+    console.log('[Server] DEMO_MODE is not enabled — skipping demo seeds and account reset.');
+  }
 
   const app  = require('./app');
   const PORT = process.env.PORT || 3001;
@@ -772,16 +777,18 @@ async function backfillProductVariants() {
     console.log(` ✨  ATELIER MARKET  —  Multi-Seller Craft Marketplace`);
     console.log(`========================================================`);
     console.log(` 🌐  http://localhost:${PORT}`);
-    console.log(`\n 👤  Artisan Seller (password: Demo1234!):`);
-    console.log(`     layla@ateliermarket.com  — Al-Rashidi Ceramics (Bahrain)`);
-    console.log(`     omar@ateliermarket.com   — Khalil Bindery (Cairo)`);
-    console.log(`     nour@ateliermarket.com   — Beit Al-Nour Glass (Beirut)`);
-    console.log(`     tariq@ateliermarket.com  — Atelier Saud Metals (Riyadh)`);
-    console.log(`\n 🛍️  Customer Accounts (password: Demo1234!):`);
-    console.log(`     sara@example.com  · james@example.com  · aisha@example.com`);
-    console.log(`\n 👑  Platform Admin (password: Demo1234!):`);
-    console.log(`     admin@ateliermarket.com  — Admin Director`);
-    console.log(`\n 🔑  Legacy Demo:  demo@atelier.com / Atelier123!`);
+    if (process.env.DEMO_MODE === 'true') {
+      console.log(`\n 👤  Artisan Seller (password: Demo1234!):`);
+      console.log(`     layla@ateliermarket.com  — Al-Rashidi Ceramics (Bahrain)`);
+      console.log(`     omar@ateliermarket.com   — Khalil Bindery (Cairo)`);
+      console.log(`     nour@ateliermarket.com   — Beit Al-Nour Glass (Beirut)`);
+      console.log(`     tariq@ateliermarket.com  — Atelier Saud Metals (Riyadh)`);
+      console.log(`\n 🛍️  Customer Accounts (password: Demo1234!):`);
+      console.log(`     sara@example.com  · james@example.com  · aisha@example.com`);
+      console.log(`\n 👑  Platform Admin (password: Demo1234!):`);
+      console.log(`     admin@ateliermarket.com  — Admin Director`);
+      console.log(`\n 🔑  Legacy Demo:  demo@atelier.com / Atelier123!`);
+    }
     console.log(`========================================================\n`);
   });
 

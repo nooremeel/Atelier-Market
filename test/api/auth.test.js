@@ -105,4 +105,56 @@ describe('auth API', () => {
       .send({ password: 'weak', userId: { $ne: null }, passwordToken: { $ne: null } });
     expect(res.status).toBe(422);
   });
+
+  it('rejects demo credentials and does not bootstrap when DEMO_MODE is not true', async () => {
+    delete process.env.DEMO_MODE;
+    const a = agent();
+    const csrf = await csrfFor(a);
+    const res = await a.post('/api/auth/login').set('csrf-token', csrf)
+      .send({ email: 'admin@ateliermarket.com', password: 'Demo1234!' });
+    expect(res.status).toBe(422);
+
+    const user = await User.findOne({ email: 'admin@ateliermarket.com' });
+    expect(user).toBeNull();
+  });
+
+  it('bootstraps demo admin account only when DEMO_MODE is "true"', async () => {
+    const originalDemoMode = process.env.DEMO_MODE;
+    process.env.DEMO_MODE = 'true';
+    try {
+      const a = agent();
+      const csrf = await csrfFor(a);
+      const res = await a.post('/api/auth/login').set('csrf-token', csrf)
+        .send({ email: 'admin@ateliermarket.com', password: 'Demo1234!' });
+      expect(res.status).toBe(200);
+      expect(res.body.user.email).toBe('admin@ateliermarket.com');
+      expect(res.body.user.role).toBe('admin');
+
+      const user = await User.findOne({ email: 'admin@ateliermarket.com' });
+      expect(user).not.toBeNull();
+      expect(user.role).toBe('admin');
+    } finally {
+      if (originalDemoMode !== undefined) {
+        process.env.DEMO_MODE = originalDemoMode;
+      } else {
+        delete process.env.DEMO_MODE;
+      }
+    }
+  });
+
+  it('session stores only minimal user details (_id and role) and preserves session auth across requests', async () => {
+    const a = agent();
+    const csrf = await csrfFor(a);
+    const creds = { email: 'sessiontest@user.com', password: 'Str0ng!pass', confirmPassword: 'Str0ng!pass' };
+
+    await a.post('/api/auth/signup').set('csrf-token', csrf).send(creds);
+    const loginRes = await a.post('/api/auth/login').set('csrf-token', csrf).send({ email: creds.email, password: creds.password });
+    expect(loginRes.status).toBe(200);
+
+    // Verify subsequent request successfully restores req.user from req.session.user._id
+    const meRes = await a.get('/api/auth/me');
+    expect(meRes.status).toBe(200);
+    expect(meRes.body.user.email).toBe(creds.email);
+    expect(meRes.body.user.role).toBe('customer');
+  });
 });

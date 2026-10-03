@@ -1,6 +1,6 @@
 # Atelier Market — Luxury Artisanal Marketplace & Multi-Vendor E-Commerce Platform
 
-[![Vitest: 100% Passing](https://img.shields.io/badge/Vitest-100%25%20Passing%20(236%20tests)-10b981?style=for-the-badge&logo=vitest&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test)
+[![Vitest: 100% Passing](https://img.shields.io/badge/Vitest-100%25%20Passing%20(258%20tests)-10b981?style=for-the-badge&logo=vitest&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client)
 [![Payment: Paymob](https://img.shields.io/badge/Payment-Paymob%20Gateway%203DS-0066FF?style=for-the-badge&logo=shield&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/paymobService.js)
 [![Architecture: Express 5 + React 18](https://img.shields.io/badge/Architecture-Express%205%20%2B%20React%2018%20SPA-d4af37?style=for-the-badge&logo=react&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop)
@@ -22,7 +22,7 @@ The application features an instant **1-Click Demo Persona Bar** on `/login` and
 | **Layla Al-Rashidi** | **Artisan Seller** (Multi-Vendor Studio) | `layla@ateliermarket.com` | `Demo1234!` | Studio KPI dashboard, catalog pieces CRUD with stock thresholds, order status progression (`crafting`, `shipped`, Aramex tracking numbers). |
 | **Admin Director** | **Platform Admin** (Director) | `admin@ateliermarket.com` | `Demo1234!` | Marketplace-wide GMV analytics, cross-platform orders monitor, artisan directory, cross-studio piece audit, system health. |
 
-> **Zero-Friction Guarantee**: All demo accounts automatically self-bootstrap on first login in any database environment.
+> **Demo Mode Notice**: Instant demo personas and automatic account bootstrapping/resets are active when `DEMO_MODE=true` is set in the environment (configured in Vercel project settings for live showcase evaluations). In standard production or non-demo environments where `DEMO_MODE` is unset or `false`, demo bootstrapping and credential resets are disabled to safeguard production data.
 
 ---
 
@@ -109,15 +109,15 @@ flowchart TD
 
 ---
 
-## 🧪 Automated Test Suite (236 Tests · 100% Pass)
+## 🧪 Automated Test Suite (258 Tests · 100% Pass)
 
 The application maintains comprehensive automated test coverage across both client components and backend REST endpoints:
 
 ```bash
-# Run backend integration tests (15 test files, 77 tests)
+# Run backend integration tests (16 test files, 85 tests)
 npm test
 
-# Run frontend React component tests (53 test files, 159 tests)
+# Run frontend React component tests (55 test files, 173 tests)
 npm --prefix client test
 
 # Run full production typecheck & client build
@@ -151,6 +151,9 @@ PORT=3000
 NODE_ENV=development
 SESSION_SECRET=atelier_market_super_secret_session_key_2026_secure
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.example.mongodb.net/shop
+
+# Demo Persona Bootstrap (Set DEMO_MODE=true only in showcase/demo environments such as Vercel)
+DEMO_MODE=false
 
 # Paymob Payment Gateway (Optional: defaults to offline simulation if unconfigured)
 PAYMOB_SANDBOX_MODE=false

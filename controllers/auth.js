@@ -22,8 +22,8 @@ exports.postLogin = async (req, res, next) => {
   try {
     let user = await User.findOne({ email });
 
-    // Auto-bootstrap demo accounts if they don't exist in the active database yet
-    if (!user && password === 'Demo1234!') {
+    // Auto-bootstrap demo accounts if enabled and they don't exist in the active database yet
+    if (process.env.DEMO_MODE === 'true' && !user && password === 'Demo1234!') {
       const hash = await bcrypt.hash('Demo1234!', 10);
       if (email === 'admin@ateliermarket.com') {
         user = new User({
@@ -66,7 +66,7 @@ exports.postLogin = async (req, res, next) => {
 
     let match = await bcrypt.compare(password, user.password);
     if (!match) {
-      if (email === 'admin@ateliermarket.com' && password === 'Demo1234!') {
+      if (process.env.DEMO_MODE === 'true' && email === 'admin@ateliermarket.com' && password === 'Demo1234!') {
         user.password = await bcrypt.hash('Demo1234!', 10);
         user.role = 'admin';
         await user.save();
@@ -77,7 +77,7 @@ exports.postLogin = async (req, res, next) => {
     }
 
     req.session.isLoggedIn = true;
-    req.session.user = user;
+    req.session.user = { _id: user._id, role: user.role };
     return req.session.save(() =>
       res.json({
         user: {

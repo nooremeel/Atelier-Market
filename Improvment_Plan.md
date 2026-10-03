@@ -336,3 +336,179 @@ flowchart TD
 5. **Step 5 (Day 5)**: Add product variants selector (if multiple sizes/scents exist).
 6. **Step 6 (Day 6)**: Configure `vitest.config.mjs`, inject Schema.org JSON-LD, and add session secret security.
 7. **Step 7 (Day 7)**: Paymob refinement: loading visualization, iframe height optimization, mobile audit, redirect callback with status toasts, cart clearing fallback, and demo order cleanup.
+
+---
+
+## 🏗️ Phase 8: Architecture & Code Quality Refactoring
+
+*Identified during deep code analysis — October 2026*
+
+These are internal code quality and architectural issues that do not affect the demo experience
+but are important for long-term maintainability, scalability, and code cleanliness. They should
+be addressed before the codebase grows further.
+
+| # | Issue | Severity | Files Affected |
+|---|---|---|---|
+| 8.1 | Mixed async styles in auth controller | 🟡 Medium | `controllers/auth.js` |
+| 8.2 | Business logic leaking into controllers | 🔴 High | `controllers/auth.js`, `controllers/shop.js` |
+| 8.3 | `shop.js` controller violates SRP (23KB) | 🔴 High | `controllers/shop.js` |
+| 8.4 | Demo bootstrap logic hardcoded in `postLogin` | 🟡 Medium | `controllers/auth.js` |
+| 8.5 | Duplicate entry points (`app.js` + `server.js`) | 🟡 Medium | `app.js`, `server.js` |
+| 8.6 | Orphaned / unused dependencies in `package.json` | 🟢 Low | `package.json` |
+| 8.7 | No service layer for most features | 🔴 High | `controllers/shop.js`, `controllers/adminController.js` |
+| 8.8 | Conflicting styling systems (CSS tokens + TailwindCSS) | 🟡 Medium | `client/package.json`, `client/src/design-system/` |
+
+---
+
+### 8.1 — Mixed `async/await` vs `.then()/.catch()` in Auth Controller
+
+**Problem**: `controllers/auth.js` uses `async/await` in `postLogin` but uses raw `.then()/.catch()`
+chains in `postSignup`, `postReset`, `postChangePassword`, and `getResetToken`. This creates
+inconsistency and makes the code harder to read and maintain.
+
+**Fix**: Rewrite all controller functions in `auth.js` to use `async/await` consistently.
+
+```js
+// ❌ Current (postSignup uses .then chains)
+bcrypt.hash(password, 12).then((hashed) => new User({ ... }).save()).then(...).catch(...)
+
+// ✅ Target (consistent async/await)
+exports.postSignup = async (req, res, next) => {
+  try {
+    const hashed = await bcrypt.hash(password, 12);
+    const user = await new User({ ... }).save();
+    res.status(201).json({ user: { ... } });
+  } catch (err) {
+    next(err);
+  }
+};
+```
+
+**Relevant File**: [controllers/auth.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/auth.js)
+
+---
+
+### 8.2 — Business Logic Leaking into Controllers
+
+**Problem**: `controllers/auth.js` `postLogin` contains: bcrypt comparisons, user auto-creation,
+session management, demo account bootstrapping, and response formatting — all in one 80-line function.
+This violates the Single Responsibility Principle. Controllers should only orchestrate; they should
+not contain business logic.
+
+**Fix**: Extract logic into a dedicated `services/authService.js`:
+- `authService.findOrBootstrapDemoUser(email, password)` → DB + bootstrap logic
+- `authService.verifyPassword(user, password)` → bcrypt logic
+- Leave only session + response in the controller.
+
+**Relevant Files**:
+- [controllers/auth.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/auth.js)
+- [services/](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/) ← create `authService.js` here
+
+---
+
+### 8.3 — `shop.js` Controller Violates Single Responsibility (23KB)
+
+**Problem**: `controllers/shop.js` (23KB) handles: product listing, product search, cart operations,
+order creation, payment initiation, review CRUD, favourites, and more — all in one file. This is a
+classic "God Controller" anti-pattern. It is extremely hard to test, extend, or reason about.
+
+**Fix**: Break it into focused, domain-specific controllers and extract logic into services:
+- `controllers/products.js` → product listing, search, detail
+- `controllers/cart.js` → cart add/update/remove/clear
+- `controllers/orders.js` → order creation, order listing
+- `controllers/reviews.js` → review CRUD
+- `services/cartService.js`, `services/orderService.js`, `services/productService.js`
+
+**Relevant File**: [controllers/shop.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/shop.js)
+
+---
+
+### 8.4 — Demo Bootstrap Logic Hardcoded in `postLogin` [RESOLVED]
+
+**Status**: Resolved. Demo account provisioning and admin credential resets in [controllers/auth.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/auth.js) and [server.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/server.js) are now gated strictly behind `if (process.env.DEMO_MODE === 'true')`. In addition, `req.session.user` was updated from storing the full Mongoose user document (which included the password hash) to storing only `{ _id, role }`, preventing sensitive credential hashes from lingering in the session store.
+
+**Relevant Files**:
+- [controllers/auth.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/auth.js)
+- [server.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/server.js)
+- [README.md](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/README.md)
+- [.env.example](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/.env.example)
+- [test/api/auth.test.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/auth.test.js)
+
+---
+
+### 8.5 — Duplicate Entry Points (`app.js` + `server.js`)
+
+**Problem**: The project has two entry point files — `app.js` (used by Vercel/tests, exports `app`)
+and `server.js` (35KB — used for local development). Having two separate configuration locations
+creates a risk of divergence: middleware added to one may be missing from the other, leading to
+bugs that only appear in one environment.
+
+**Fix**: Consolidate all Express middleware configuration into `app.js` (the primary app definition).
+`server.js` (or a renamed `start.js`) should be a thin bootstrap file that only calls
+`connectToDatabase()` and `app.listen()` — nothing else.
+
+**Relevant Files**:
+- [app.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/app.js)
+- [server.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/server.js)
+
+---
+
+### 8.6 — Orphaned / Unused Dependencies in `package.json`
+
+**Problem**: `package.json` includes several dependencies that appear to be unused artifacts from
+an earlier learning phase of the project:
+- `pug`, `ejs`, `express-handlebars` — template engines (not used; frontend is a React SPA)
+- `mysql2`, `sequelize` — SQL ORM (not used; project uses MongoDB + Mongoose)
+
+These add unnecessary weight to the `node_modules` directory and increase the installed surface area.
+
+**Fix**: Remove the unused dependencies:
+```powershell
+npm uninstall pug ejs express-handlebars mysql2 sequelize
+```
+Then verify all tests still pass with `npm test`.
+
+**Relevant File**: [package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/package.json)
+
+---
+
+### 8.7 — No Service Layer for Most Features
+
+**Problem**: Only `services/paymobService.js` exists. All other business logic (cart, orders,
+products, reviews, admin analytics) lives directly in the controllers. This means:
+- Controllers are too large and too complex to test in isolation.
+- Business logic cannot be reused across different routes.
+- Unit testing business logic requires bootstrapping the full HTTP layer.
+
+**Fix**: Create a service for each domain as features are modified. Do not add new logic to
+controllers — extract it to a service first. Priority order:
+1. `services/authService.js` (combined with fix 8.2)
+2. `services/orderService.js` (extracted from `shop.js`)
+3. `services/cartService.js` (extracted from `shop.js`)
+4. `services/productService.js` (extracted from `shop.js` and `adminController.js`)
+
+**Relevant Files**:
+- [controllers/shop.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/shop.js)
+- [controllers/adminController.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/adminController.js)
+- [services/](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/) ← target location
+
+---
+
+### 8.8 — Conflicting Styling Systems (CSS Design Tokens + TailwindCSS)
+
+**Problem**: The frontend uses a custom CSS design token system (`client/src/design-system/tokens.css`)
+but `tailwindcss` is also installed as a dependency in `client/package.json`. Two styling systems
+coexisting creates confusion: it is unclear which is the canonical approach, and future contributors
+may use either inconsistently.
+
+**Fix**: Decide on one canonical styling system and remove or disable the other:
+- **Option A (Recommended)**: Keep the custom CSS design token system. Remove `tailwindcss`,
+  `autoprefixer`, and `postcss` from `client/package.json` if Tailwind is not actively used.
+- **Option B**: Migrate fully to TailwindCSS v3 and replace the custom tokens with Tailwind's
+  theme configuration.
+
+Verify which classes are actually used in the codebase before removing either system.
+
+**Relevant Files**:
+- [client/package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/package.json)
+- [client/src/design-system/tokens.css](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/design-system/tokens.css)
