@@ -25,6 +25,7 @@ Freelance clients, startup founders, and agency leads evaluate developer portfol
 | **Phase 5** | **Slide-Over Mini Cart & Free Shipping Progress Meter**| ✨ High (E-Commerce UX & Conversion Magic) | Completed ✅ |
 | **Phase 6** | **Production Hardening, SEO (JSON-LD), & Test Stability**| 🛡️ High (Shows CTO-Level Clean Code Standards)| Completed ✅ |
 | **Phase 7** | **Paymob Payment Integration & Luxury Vault** | 💳 Critical (Commercial Financial Integration) | Completed ✅ |
+| **Phase 8** | **Architecture, Hygiene, Dependencies & CI Pipeline** | 🏗️ High (Maintainability, Testing Automation & Cleanliness) | Planned 📋 |
 
 ---
 
@@ -352,11 +353,13 @@ be addressed before the codebase grows further.
 | 8.1 | Mixed async styles in auth controller | 🟡 Medium | `controllers/auth.js` |
 | 8.2 | Business logic leaking into controllers | 🔴 High | `controllers/auth.js`, `controllers/shop.js` |
 | 8.3 | `shop.js` controller violates SRP (23KB) | 🔴 High | `controllers/shop.js` |
-| 8.4 | Demo bootstrap logic hardcoded in `postLogin` | 🟡 Medium | `controllers/auth.js` |
+| 8.4 | Demo bootstrap logic hardcoded in `postLogin` | 🟡 Medium | `controllers/auth.js` (Resolved ✅) |
 | 8.5 | Duplicate entry points (`app.js` + `server.js`) | 🟡 Medium | `app.js`, `server.js` |
-| 8.6 | Orphaned / unused dependencies in `package.json` | 🟢 Low | `package.json` |
+| 8.6 | Orphaned / unused dependencies (`mysql2`, `sequelize`, `pug`, `ejs`, `express-handlebars`) | 🟢 Low | `package.json` (Planned 📋) |
 | 8.7 | No service layer for most features | 🔴 High | `controllers/shop.js`, `controllers/adminController.js` |
 | 8.8 | Conflicting styling systems (CSS tokens + TailwindCSS) | 🟡 Medium | `client/package.json`, `client/src/design-system/` |
+| 8.9 | Root directory & legacy invoice PDFs clutter | 🟢 Low | Root files, `data/invoices/` (Planned 📋) |
+| 8.10 | Automated Continuous Integration (CI) pipeline | 🟡 Medium | `.github/workflows/ci.yml` (Planned 📋) |
 
 ---
 
@@ -453,18 +456,18 @@ bugs that only appear in one environment.
 
 ---
 
-### 8.6 — Orphaned / Unused Dependencies in `package.json`
+### 8.6 — Orphaned / Unused Dependencies in `package.json` [Planned 📋]
 
-**Problem**: `package.json` includes several dependencies that appear to be unused artifacts from
-an earlier learning phase of the project:
-- `pug`, `ejs`, `express-handlebars` — template engines (not used; frontend is a React SPA)
-- `mysql2`, `sequelize` — SQL ORM (not used; project uses MongoDB + Mongoose)
+**Problem**: `package.json` includes several dependencies that are legacy artifacts from an earlier learning phase:
+- `mysql2`, `sequelize` — SQL database connector and ORM (not used; the project exclusively uses MongoDB Atlas + Mongoose).
+- `pug`, `ejs`, `express-handlebars` — Server-side template engines (not used; the frontend is a modern React 18 + TypeScript SPA).
 
-These add unnecessary weight to the `node_modules` directory and increase the installed surface area.
+None of these packages (`mysql2`, `sequelize`, `pug`, `ejs`, `express-handlebars`) are imported anywhere in the project codebase. Leaving them installed adds unnecessary weight to `node_modules`, bloats `package-lock.json`, and expands the dependency audit surface.
 
-**Fix**: Remove the unused dependencies:
+**Fix (Planned for later)**:
+Remove the unused dependencies:
 ```powershell
-npm uninstall pug ejs express-handlebars mysql2 sequelize
+npm uninstall mysql2 sequelize pug ejs express-handlebars
 ```
 Then verify all tests still pass with `npm test`.
 
@@ -512,3 +515,101 @@ Verify which classes are actually used in the codebase before removing either sy
 **Relevant Files**:
 - [client/package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/package.json)
 - [client/src/design-system/tokens.css](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/design-system/tokens.css)
+
+---
+
+### 8.9 — Root Directory & Legacy Invoices Clutter [Planned 📋]
+
+**Problem**:
+The workspace contains legacy files and obsolete development leftovers that clutter the repository:
+1. **Root Directory Images & Text Files**:
+   - `BOOK.jpg`, `BOOK2.jpg`, `book1.jpg`, `Coffee.jpg` — Unreferenced image files left over from early course exercises and tutorials. All official storefront catalog assets now live cleanly inside `images/products/` and `public/images/`.
+   - `message.txt` — A scratch file containing only the single word `"message"`, an artifact from early Node.js filesystem / streams practice.
+2. **Legacy Invoices in `data/invoices/`**:
+   - `data/invoices/` contains static PDF files (`invoice-6a25780c077f4938445699a9.pdf`, etc.) from early implementations where invoices were saved to local disk.
+   - The platform now dynamically generates official archival invoices on-the-fly via `pdfkit` buffer streaming (`getInvoice` in `controllers/shop.js` and `util/invoiceGenerator.js`), piping PDF bytes directly to the HTTP response stream without writing to disk. These static files are completely orphaned.
+
+**Fix (Planned for later)**:
+Delete the obsolete root files and clear the static invoice PDFs:
+```powershell
+# Remove root clutter files
+Remove-Item BOOK.jpg, BOOK2.jpg, book1.jpg, Coffee.jpg, message.txt
+
+# Remove legacy generated PDFs
+Remove-Item data/invoices/*.pdf
+```
+Verify that no code paths or build scripts reference these files.
+
+**Relevant Files**:
+- [BOOK.jpg](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/BOOK.jpg)
+- [BOOK2.jpg](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/BOOK2.jpg)
+- [book1.jpg](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/book1.jpg)
+- [Coffee.jpg](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/Coffee.jpg)
+- [message.txt](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/message.txt)
+- [data/invoices/](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/data/invoices/)
+
+---
+
+### 8.10 — Automated Continuous Integration (CI) Pipeline [Planned 📋]
+
+**Problem**:
+The project currently has comprehensive test coverage (254 passing tests across backend API and frontend React suites), but lacks an automated Continuous Integration (CI) pipeline on GitHub. Pull requests and commits are not automatically tested in a clean virtual environment, creating risk for regressions, TypeScript compiler breaks, or dependency mismatches across environments.
+
+**Fix (Planned for later)**:
+Create a GitHub Actions CI workflow in `.github/workflows/ci.yml` that triggers on all `push` and `pull_request` events to `main`:
+1. **Matrix & Environment**:
+   - Run across Node.js versions (e.g., Node 18 & 20) on `ubuntu-latest`.
+2. **Backend Automated Verification**:
+   - Run `npm ci` for deterministic dependency resolution.
+   - Execute backend test suite via `npm test` using Vitest and in-memory MongoDB.
+3. **Frontend Automated Verification**:
+   - Run `npm ci` in `client/`.
+   - Run TypeScript type validation (`npm run build` or `npx tsc --noEmit`).
+   - Run frontend unit and component tests via `npm run test` in `client/`.
+4. **Build & Lint Verification**:
+   - Verify production bundle builds without errors.
+
+```yaml
+# .github/workflows/ci.yml
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - name: Install root dependencies
+        run: npm ci
+      - name: Run backend tests
+        run: npm test
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm ci
+      - name: Type check client
+        working-directory: ./client
+        run: npx tsc --noEmit
+      - name: Run client tests
+        working-directory: ./client
+        run: npm run test
+```
+
+**Relevant Files**:
+- `.github/workflows/ci.yml` (to create)
+- [package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/package.json)
+- [client/package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/package.json)
+- [vitest.config.mjs](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/vitest.config.mjs)
+- [client/vite.config.ts](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/vite.config.ts)

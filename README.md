@@ -1,10 +1,10 @@
 # Atelier Market — Luxury Artisanal Marketplace & Multi-Vendor E-Commerce Platform
 
-[![Vitest: 100% Passing](https://img.shields.io/badge/Vitest-100%25%20Passing%20(258%20tests)-10b981?style=for-the-badge&logo=vitest&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test)
-[![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client)
-[![Payment: Paymob](https://img.shields.io/badge/Payment-Paymob%20Gateway%203DS-0066FF?style=for-the-badge&logo=shield&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/paymobService.js)
-[![Architecture: Express 5 + React 18](https://img.shields.io/badge/Architecture-Express%205%20%2B%20React%2018%20SPA-d4af37?style=for-the-badge&logo=react&logoColor=white)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop)
-[![License: ISC](https://img.shields.io/badge/License-ISC-stone?style=for-the-badge)](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/package.json)
+[![Vitest: 100% Passing](https://img.shields.io/badge/Vitest-100%25%20Passing%20(258%20tests)-10b981?style=for-the-badge&logo=vitest&logoColor=white)](https://github.com/nooremeel/Atelier-Market/tree/main/test)
+[![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://github.com/nooremeel/Atelier-Market/tree/main/client)
+[![Payment: Paymob](https://img.shields.io/badge/Payment-Paymob%20Gateway%203DS-0066FF?style=for-the-badge&logo=shield&logoColor=white)](https://github.com/nooremeel/Atelier-Market/blob/main/services/paymobService.js)
+[![Architecture: Express 5 + React 18](https://img.shields.io/badge/Architecture-Express%205%20%2B%20React%2018%20SPA-d4af37?style=for-the-badge&logo=react&logoColor=white)](https://github.com/nooremeel/Atelier-Market)
+[![License: ISC](https://img.shields.io/badge/License-ISC-stone?style=for-the-badge)](https://github.com/nooremeel/Atelier-Market/blob/main/package.json)
 
 **Atelier Market** is a bespoke, enterprise-grade multi-vendor e-commerce platform and artisanal marketplace engineered to connect master craft studios across the Gulf and Levant regions with global patrons.
 
@@ -134,8 +134,8 @@ npm run client:build
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/nooremeel/node-js-shop.git
-cd node-js-shop
+git clone https://github.com/nooremeel/Atelier-Market.git
+cd Atelier-Market
 ```
 
 ### 2. Install Dependencies
@@ -190,7 +190,7 @@ npm start
 ## 📋 Project Structure
 
 ```text
-node-js-shop/
+Atelier-Market/
 ├── client/                     # React 18 + TypeScript SPA
 │   ├── src/
 │   │   ├── components/         # Shared design system components (Drawer, FreeShippingMeter, etc.)
@@ -219,4 +219,4 @@ node-js-shop/
 
 ## ⚖️ License
 
-This project is licensed under the [ISC License](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/package.json).
+This project is licensed under the [ISC License](https://github.com/nooremeel/Atelier-Market/blob/main/package.json).
