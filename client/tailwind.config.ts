@@ -1,3 +1,16 @@
+/**
+ * @file client/tailwind.config.ts
+ * @description Tailwind CSS Configuration — Atelier Noir Design System Integration.
+ * 
+ * ARCHITECTURE NOTE (Section 8.8):
+ * This project uses a hybrid Token-Driven Tailwind system:
+ * - Single Source of Truth: `client/src/design-system/tokens.css` defines all raw CSS variables,
+ *   RGB channel values, and dark-mode overrides.
+ * - Utility Generator: This configuration maps those CSS variables into Tailwind utilities with
+ *   full opacity modifier support (`rgb(var(--color-*-rgb) / <alpha-value>)`).
+ * - Do NOT remove Tailwind or tokens.css — they work in concert across all UI components.
+ */
+
 import type { Config } from 'tailwindcss';
 
 export default {

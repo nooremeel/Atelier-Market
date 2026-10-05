@@ -6,4 +6,5 @@ nodemon.json
 public/app/
 client/node_modules/
 access.log
-data/invoices/invoice-*.pdf
+data/invoices/*.pdf
+!data/invoices/.gitkeep

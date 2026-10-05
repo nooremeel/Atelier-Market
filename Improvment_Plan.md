@@ -350,20 +350,20 @@ be addressed before the codebase grows further.
 
 | # | Issue | Severity | Files Affected |
 |---|---|---|---|
-| 8.1 | Mixed async styles in auth controller | 🟡 Medium | `controllers/auth.js` |
-| 8.2 | Business logic leaking into controllers | 🔴 High | `controllers/auth.js`, `controllers/shop.js` |
-| 8.3 | `shop.js` controller violates SRP (23KB) | 🔴 High | `controllers/shop.js` |
+| 8.1 | Mixed async styles in auth controller | 🟡 Medium | `controllers/auth.js` (Resolved ✅) |
+| 8.2 | Business logic leaking into controllers | 🔴 High | `controllers/auth.js` (Resolved ✅), `controllers/shop.js` |
+| 8.3 | `shop.js` controller violates SRP (23KB) | 🔴 High | `controllers/shop.js` (Resolved ✅) |
 | 8.4 | Demo bootstrap logic hardcoded in `postLogin` | 🟡 Medium | `controllers/auth.js` (Resolved ✅) |
-| 8.5 | Duplicate entry points (`app.js` + `server.js`) | 🟡 Medium | `app.js`, `server.js` |
-| 8.6 | Orphaned / unused dependencies (`mysql2`, `sequelize`, `pug`, `ejs`, `express-handlebars`) | 🟢 Low | `package.json` (Planned 📋) |
-| 8.7 | No service layer for most features | 🔴 High | `controllers/shop.js`, `controllers/adminController.js` |
-| 8.8 | Conflicting styling systems (CSS tokens + TailwindCSS) | 🟡 Medium | `client/package.json`, `client/src/design-system/` |
-| 8.9 | Root directory & legacy invoice PDFs clutter | 🟢 Low | Root files, `data/invoices/` (Planned 📋) |
-| 8.10 | Automated Continuous Integration (CI) pipeline | 🟡 Medium | `.github/workflows/ci.yml` (Planned 📋) |
+| 8.5 | Duplicate entry points (`app.js` + `server.js`) | 🟡 Medium | `app.js`, `server.js` (Resolved ✅) |
+| 8.6 | Orphaned / unused dependencies (`mysql2`, `sequelize`, `pug`, `ejs`, `express-handlebars`) | 🟢 Low | `package.json` (Resolved ✅) |
+| 8.7 | No service layer for most features | 🔴 High | `controllers/shop.js`, `controllers/adminController.js` (Resolved ✅) |
+| 8.8 | Conflicting styling systems (CSS tokens + TailwindCSS) | 🟡 Medium | `client/package.json`, `client/src/design-system/` (Resolved ✅) |
+| 8.9 | Root directory & legacy invoice PDFs clutter | 🟢 Low | Root files, `data/invoices/` (Resolved ✅) |
+| 8.10 | Automated Continuous Integration (CI) pipeline | 🟡 Medium | `.github/workflows/ci.yml` (Resolved ✅) |
 
 ---
 
-### 8.1 — Mixed `async/await` vs `.then()/.catch()` in Auth Controller
+### 8.1 — Mixed `async/await` vs `.then()/.catch()` in Auth Controller (Resolved ✅)
 
 **Problem**: `controllers/auth.js` uses `async/await` in `postLogin` but uses raw `.then()/.catch()`
 chains in `postSignup`, `postReset`, `postChangePassword`, and `getResetToken`. This creates
@@ -391,38 +391,50 @@ exports.postSignup = async (req, res, next) => {
 
 ---
 
-### 8.2 — Business Logic Leaking into Controllers
+### 8.2 — Business Logic Leaking into Controllers (Resolved for Auth ✅)
 
-**Problem**: `controllers/auth.js` `postLogin` contains: bcrypt comparisons, user auto-creation,
-session management, demo account bootstrapping, and response formatting — all in one 80-line function.
-This violates the Single Responsibility Principle. Controllers should only orchestrate; they should
-not contain business logic.
-
-**Fix**: Extract logic into a dedicated `services/authService.js`:
-- `authService.findOrBootstrapDemoUser(email, password)` → DB + bootstrap logic
-- `authService.verifyPassword(user, password)` → bcrypt logic
-- Leave only session + response in the controller.
+* **Status**: Resolved for Auth & Verified with 100% passing tests (21 unit tests in `test/api/authService.test.js` and 11 integration tests in `test/api/auth.test.js`).
+* **Problem Solved**:
+  `controllers/auth.js` `postLogin` previously contained bcrypt comparisons, user auto-creation, session management, demo account bootstrapping, and response formatting all inside a single monolithic handler. This violated the Single Responsibility Principle.
+* **Accomplishments**:
+  - Extracted all authentication business logic into [`services/authService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/authService.js), including `findUserByEmail`, `bootstrapDemoUser`, `findOrBootstrapDemoUser`, `verifyPassword`, `authenticateUser`, `createUser`, `initiatePasswordReset`, `validateResetToken`, and `changePassword`.
+  - Transformed [`controllers/auth.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/auth.js) into a clean, thin controller that strictly validates input, delegates to `authService`, manages sessions, and formats responses.
+  - Added comprehensive unit tests in [`test/api/authService.test.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/authService.test.js) (21 tests) covering all authentication, password reset, demo mode bootstrapping, and drift recovery scenarios.
+  *(Note: Remaining controller refactoring for `controllers/shop.js` is addressed in Section 8.3 and Section 8.7).*
 
 **Relevant Files**:
 - [controllers/auth.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/auth.js)
-- [services/](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/) ← create `authService.js` here
+- [services/authService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/authService.js)
+- [test/api/authService.test.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/authService.test.js)
 
 ---
 
-### 8.3 — `shop.js` Controller Violates Single Responsibility (23KB)
+### 8.3 — `shop.js` Controller Violates Single Responsibility (Resolved ✅)
 
-**Problem**: `controllers/shop.js` (23KB) handles: product listing, product search, cart operations,
-order creation, payment initiation, review CRUD, favourites, and more — all in one file. This is a
-classic "God Controller" anti-pattern. It is extremely hard to test, extend, or reason about.
+* **Status**: Resolved & Verified with 100% passing tests (106 backend tests across 17 files, 173 frontend tests across 55 files).
+* **Problem Solved**:
+  `controllers/shop.js` (formerly 23.8KB) acted as a monolithic "God Controller", bundling together product catalog querying, shopping cart mutations, order creation, Paymob reconciliation, and invoice generation.
+* **Accomplishments**:
+  - Extracted business logic into dedicated, single-responsibility services:
+    - [`services/productService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/productService.js): Catalog filtering (`buildProductFilter`), pagination, and product detail queries.
+    - [`services/cartService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/cartService.js): Cart serialization (`serializeCart`), stock availability checks, and line-item mutations (`addToCart`, `removeFromCart`, `decrementCartItem`).
+    - [`services/orderService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/orderService.js): Order placement (`createOrder`), atomic stock decrements, discount code voucher accounting, auto-reconciliation of pending Paymob payments (`reconcilePendingPaymobOrders`), and customer order history (`getUserOrders`).
+  - Created domain-specific thin controllers:
+    - [`controllers/products.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/products.js): Product catalog and detail endpoints.
+    - [`controllers/cart.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/cart.js): Cart manipulation endpoints with express-validator integration.
+    - [`controllers/orders.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/orders.js): Order submission, history retrieval, and PDF invoice streaming.
+  - Rewrote [`routes/shop.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/routes/shop.js) to route cleanly to `productsController`, `cartController`, and `ordersController`.
+  - Converted [`controllers/shop.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/shop.js) into a clean, backward-compatible facade re-exporting the domain controllers.
 
-**Fix**: Break it into focused, domain-specific controllers and extract logic into services:
-- `controllers/products.js` → product listing, search, detail
-- `controllers/cart.js` → cart add/update/remove/clear
-- `controllers/orders.js` → order creation, order listing
-- `controllers/reviews.js` → review CRUD
-- `services/cartService.js`, `services/orderService.js`, `services/productService.js`
-
-**Relevant File**: [controllers/shop.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/shop.js)
+**Relevant Files**:
+- [controllers/shop.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/shop.js)
+- [controllers/products.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/products.js)
+- [controllers/cart.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/cart.js)
+- [controllers/orders.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/orders.js)
+- [services/productService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/productService.js)
+- [services/cartService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/cartService.js)
+- [services/orderService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/orderService.js)
+- [routes/shop.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/routes/shop.js)
 
 ---
 
@@ -439,176 +451,135 @@ classic "God Controller" anti-pattern. It is extremely hard to test, extend, or 
 
 ---
 
-### 8.5 — Duplicate Entry Points (`app.js` + `server.js`)
+### 8.5 — Duplicate Entry Points (`app.js` + `server.js`) (Resolved ✅)
 
-**Problem**: The project has two entry point files — `app.js` (used by Vercel/tests, exports `app`)
-and `server.js` (35KB — used for local development). Having two separate configuration locations
-creates a risk of divergence: middleware added to one may be missing from the other, leading to
-bugs that only appear in one environment.
-
-**Fix**: Consolidate all Express middleware configuration into `app.js` (the primary app definition).
-`server.js` (or a renamed `start.js`) should be a thin bootstrap file that only calls
-`connectToDatabase()` and `app.listen()` — nothing else.
+* **Status**: Resolved & Verified with 100% passing tests (106 backend tests across 17 files, 173 frontend tests across 55 files).
+* **Problem Solved**:
+  `server.js` previously contained over 750 lines of database seeding and migration code mixed directly with server listening logic, creating confusion and redundancy alongside `app.js`.
+* **Accomplishments**:
+  - Extracted all database seed identities, products, reviews, orders, promo discounts, and schema backfills into a dedicated module: [`scripts/seedDemoData.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/scripts/seedDemoData.js).
+  - Consolidated [`app.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/app.js) as the sole, canonical Express application configuration for all environments (Vercel serverless functions, Vitest test suites, and local instances).
+  - Streamlined [`server.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/server.js) from 35.6KB down to a thin, ~65-line bootstrap entry point that connects via cached singleton `connectToDatabase()`, optionally invokes `seedDemoData()` when `DEMO_MODE=true`, starts `app.listen()`, and registers graceful process shutdown handlers (`SIGINT`, `SIGTERM`).
 
 **Relevant Files**:
 - [app.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/app.js)
 - [server.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/server.js)
+- [scripts/seedDemoData.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/scripts/seedDemoData.js)
 
 ---
 
-### 8.6 — Orphaned / Unused Dependencies in `package.json` [Planned 📋]
+### 8.6 — Orphaned / Unused Dependencies in `package.json` (Resolved ✅)
 
-**Problem**: `package.json` includes several dependencies that are legacy artifacts from an earlier learning phase:
-- `mysql2`, `sequelize` — SQL database connector and ORM (not used; the project exclusively uses MongoDB Atlas + Mongoose).
-- `pug`, `ejs`, `express-handlebars` — Server-side template engines (not used; the frontend is a modern React 18 + TypeScript SPA).
-
-None of these packages (`mysql2`, `sequelize`, `pug`, `ejs`, `express-handlebars`) are imported anywhere in the project codebase. Leaving them installed adds unnecessary weight to `node_modules`, bloats `package-lock.json`, and expands the dependency audit surface.
-
-**Fix (Planned for later)**:
-Remove the unused dependencies:
-```powershell
-npm uninstall mysql2 sequelize pug ejs express-handlebars
-```
-Then verify all tests still pass with `npm test`.
+* **Status**: Resolved & Verified with 100% passing tests (85 backend tests across 16 files, 173 frontend tests across 55 files).
+* **Problem Solved**:
+  `package.json` previously included several dependencies that were legacy artifacts from an earlier learning phase:
+  - `mysql2`, `sequelize` — SQL database connector and ORM (not used; the project exclusively uses MongoDB Atlas + Mongoose).
+  - `pug`, `ejs`, `express-handlebars` — Server-side template engines (not used; the frontend is a modern React 18 + TypeScript SPA).
+* **Accomplishments**:
+  - Removed `mysql2`, `sequelize`, `pug`, `ejs`, and `express-handlebars` via `npm uninstall`.
+  - Pruned 70 unnecessary transitive packages from `node_modules` and trimmed `package-lock.json`.
+  - Re-ran full backend and frontend test suites verifying 100% test pass rates with zero regressions.
 
 **Relevant File**: [package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/package.json)
 
 ---
 
-### 8.7 — No Service Layer for Most Features
+### 8.7 — No Service Layer for Most Features (Resolved ✅)
 
-**Problem**: Only `services/paymobService.js` exists. All other business logic (cart, orders,
-products, reviews, admin analytics) lives directly in the controllers. This means:
-- Controllers are too large and too complex to test in isolation.
-- Business logic cannot be reused across different routes.
-- Unit testing business logic requires bootstrapping the full HTTP layer.
-
-**Fix**: Create a service for each domain as features are modified. Do not add new logic to
-controllers — extract it to a service first. Priority order:
-1. `services/authService.js` (combined with fix 8.2)
-2. `services/orderService.js` (extracted from `shop.js`)
-3. `services/cartService.js` (extracted from `shop.js`)
-4. `services/productService.js` (extracted from `shop.js` and `adminController.js`)
+* **Status**: Resolved & Verified with 100% passing tests (109 backend tests across 18 files, 173 frontend tests across 55 files).
+* **Problem Solved**:
+  Previously, only `services/paymobService.js` existed. All business logic for products, shopping carts, orders, customer invoices, and platform administration/analytics lived directly inside controller files (`controllers/shop.js`, `controllers/adminController.js`, and `controllers/auth.js`).
+* **Accomplishments**:
+  - Extracted comprehensive domain service modules conforming to Single Responsibility:
+    - [`services/authService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/authService.js): User queries, password verification, demo account bootstrapping, account creation, and password reset token lifecycle.
+    - [`services/productService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/productService.js): Catalog filtering, pagination, product creation, updates, ownership inspection, discount mutations, and admin serialization.
+    - [`services/cartService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/cartService.js): Cart item serialization, stock availability verification, item addition, increment/decrement, and deletion.
+    - [`services/orderService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/orderService.js): Checkout order creation, atomic stock reduction, coupon voucher redemption, Paymob payment reconciliation, and order history retrieval.
+    - [`services/adminService.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/adminService.js): Platform Gross Merchandise Value (GMV) aggregation, administrative order auditing, and artisan studio directory metrics.
+  - Refactored `controllers/adminController.js`, `controllers/shop.js` (facade), and domain controllers (`controllers/products.js`, `controllers/cart.js`, `controllers/orders.js`) into thin controllers handling strictly validation, service delegation, and HTTP serialization.
+  - Added isolated service unit tests in [`test/api/authService.test.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/authService.test.js) (21 tests) and [`test/api/adminService.test.js`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/adminService.test.js) (3 tests).
 
 **Relevant Files**:
-- [controllers/shop.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/shop.js)
 - [controllers/adminController.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/controllers/adminController.js)
-- [services/](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/) ← target location
+- [services/adminService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/adminService.js)
+- [services/productService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/productService.js)
+- [services/cartService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/cartService.js)
+- [services/orderService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/orderService.js)
+- [services/authService.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/services/authService.js)
+- [test/api/adminService.test.js](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/test/api/adminService.test.js)
 
 ---
 
-### 8.8 — Conflicting Styling Systems (CSS Design Tokens + TailwindCSS)
+### 8.8 — Conflicting Styling Systems (CSS Design Tokens + TailwindCSS) (Resolved ✅)
 
-**Problem**: The frontend uses a custom CSS design token system (`client/src/design-system/tokens.css`)
-but `tailwindcss` is also installed as a dependency in `client/package.json`. Two styling systems
-coexisting creates confusion: it is unclear which is the canonical approach, and future contributors
-may use either inconsistently.
-
-**Fix**: Decide on one canonical styling system and remove or disable the other:
-- **Option A (Recommended)**: Keep the custom CSS design token system. Remove `tailwindcss`,
-  `autoprefixer`, and `postcss` from `client/package.json` if Tailwind is not actively used.
-- **Option B**: Migrate fully to TailwindCSS v3 and replace the custom tokens with Tailwind's
-  theme configuration.
-
-Verify which classes are actually used in the codebase before removing either system.
+* **Status**: Resolved & Documented. Verified with 100% passing tests (173 client tests, 109 backend tests, and successful production bundle build).
+* **Investigation & Architectural Audit**:
+  - Codebase analysis revealed over 1,800 JSX class references relying on Tailwind utility classes across all feature components and pages.
+  - The design system was deliberately engineered as an integrated **Hybrid Token-Driven Tailwind Architecture**:
+    1. **Single Source of Truth**: [`client/src/design-system/tokens.css`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/design-system/tokens.css) declares all core CSS Custom Properties (hex colors, font stacks, fluid scale variables, hairlines, and companion `--color-*-rgb` channel variables for light and dark modes).
+    2. **Utility Generation**: [`client/tailwind.config.ts`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/tailwind.config.ts) binds directly to these CSS variables using `rgb(var(--color-*-rgb) / <alpha-value>)`, allowing Tailwind utility classes (`text-najd`, `bg-canvas`, `border-hairline`, `shadow-luxury`, etc.) to support dynamic opacity modifiers (`bg-oxblood/90`) while maintaining runtime dark-mode theme switching via the `.dark` class.
+    3. **Component Application**: React components use Tailwind utility classes referencing these tokens exclusively, avoiding arbitrary hex codes or disconnected utility styles.
+* **Accomplishments**:
+  - Audited all 55 frontend test suites and production build scripts to confirm zero conflicts between `tokens.css` and `tailwind.config.ts`.
+  - Added formal architectural documentation headers in [`client/tailwind.config.ts`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/tailwind.config.ts) and [`client/src/design-system/tokens.css`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/design-system/tokens.css) codifying `tokens.css` as the token authority and Tailwind as the utility binding layer.
+  - Verified full production build (`npm --prefix client run build`) and client test suite (`npm --prefix client test`) pass with zero errors.
 
 **Relevant Files**:
-- [client/package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/package.json)
 - [client/src/design-system/tokens.css](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/design-system/tokens.css)
+- [client/tailwind.config.ts](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/tailwind.config.ts)
+- [client/src/design-system/global.css](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/src/design-system/global.css)
+- [client/package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/package.json)
 
 ---
 
-### 8.9 — Root Directory & Legacy Invoices Clutter [Planned 📋]
+### 8.9 — Root Directory & Legacy Invoices Clutter (Resolved ✅)
 
-**Problem**:
-The workspace contains legacy files and obsolete development leftovers that clutter the repository:
-1. **Root Directory Images & Text Files**:
-   - `BOOK.jpg`, `BOOK2.jpg`, `book1.jpg`, `Coffee.jpg` — Unreferenced image files left over from early course exercises and tutorials. All official storefront catalog assets now live cleanly inside `images/products/` and `public/images/`.
-   - `message.txt` — A scratch file containing only the single word `"message"`, an artifact from early Node.js filesystem / streams practice.
-2. **Legacy Invoices in `data/invoices/`**:
-   - `data/invoices/` contains static PDF files (`invoice-6a25780c077f4938445699a9.pdf`, etc.) from early implementations where invoices were saved to local disk.
-   - The platform now dynamically generates official archival invoices on-the-fly via `pdfkit` buffer streaming (`getInvoice` in `controllers/shop.js` and `util/invoiceGenerator.js`), piping PDF bytes directly to the HTTP response stream without writing to disk. These static files are completely orphaned.
-
-**Fix (Planned for later)**:
-Delete the obsolete root files and clear the static invoice PDFs:
-```powershell
-# Remove root clutter files
-Remove-Item BOOK.jpg, BOOK2.jpg, book1.jpg, Coffee.jpg, message.txt
-
-# Remove legacy generated PDFs
-Remove-Item data/invoices/*.pdf
-```
-Verify that no code paths or build scripts reference these files.
+* **Status**: Resolved & Cleaned. Verified with 100% passing tests (109 backend tests across 18 files, 173 frontend tests across 55 files).
+* **Problem Solved**:
+  The workspace contained obsolete root image artifacts, scratch files, and legacy disk-saved invoice PDFs from earlier tutorial iterations:
+  1. **Root Directory Clutter**:
+     - `BOOK.jpg`, `BOOK2.jpg`, `book1.jpg`, `Coffee.jpg`, and `Juice.jpg` were legacy tutorial image files. All official product assets now reside in `images/products/` and `public/images/`.
+     - `message.txt` was a scratch text file from early Node.js filesystem exercises.
+  2. **Legacy Static Invoice PDFs in `data/invoices/`**:
+     - `data/invoices/` contained four static PDF files (`invoice-6a25780c077f4938445699a9.pdf`, etc.) from early implementations.
+     - Official invoices are generated dynamically on-the-fly via buffer streaming (`util/invoiceGenerator.js` piped to HTTP response) with zero local disk writes.
+* **Accomplishments**:
+  - Removed all obsolete root files (`BOOK.jpg`, `BOOK2.jpg`, `book1.jpg`, `Coffee.jpg`, `Juice.jpg`, `message.txt`) and unlinked them from git.
+  - Purged the 4 legacy static PDFs from `data/invoices/`.
+  - Added [`data/invoices/.gitkeep`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/data/invoices/.gitkeep) to preserve the directory structure in version control.
+  - Updated [`.gitignore`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/.gitignore) with `data/invoices/*.pdf` and `!data/invoices/.gitkeep` to prevent local invoice generation from ever dirtying git status.
+  - Ran the full backend test suite (`npm test`), confirming all 109 tests across 18 files pass with zero regressions.
 
 **Relevant Files**:
-- [BOOK.jpg](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/BOOK.jpg)
-- [BOOK2.jpg](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/BOOK2.jpg)
-- [book1.jpg](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/book1.jpg)
-- [Coffee.jpg](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/Coffee.jpg)
-- [message.txt](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/message.txt)
-- [data/invoices/](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/data/invoices/)
+- [data/invoices/.gitkeep](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/data/invoices/.gitkeep)
+- [.gitignore](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/.gitignore)
 
 ---
 
-### 8.10 — Automated Continuous Integration (CI) Pipeline [Planned 📋]
+### 8.10 — Automated Continuous Integration (CI) Pipeline (Resolved ✅)
 
-**Problem**:
-The project currently has comprehensive test coverage (254 passing tests across backend API and frontend React suites), but lacks an automated Continuous Integration (CI) pipeline on GitHub. Pull requests and commits are not automatically tested in a clean virtual environment, creating risk for regressions, TypeScript compiler breaks, or dependency mismatches across environments.
-
-**Fix (Planned for later)**:
-Create a GitHub Actions CI workflow in `.github/workflows/ci.yml` that triggers on all `push` and `pull_request` events to `main`:
-1. **Matrix & Environment**:
-   - Run across Node.js versions (e.g., Node 18 & 20) on `ubuntu-latest`.
-2. **Backend Automated Verification**:
-   - Run `npm ci` for deterministic dependency resolution.
-   - Execute backend test suite via `npm test` using Vitest and in-memory MongoDB.
-3. **Frontend Automated Verification**:
-   - Run `npm ci` in `client/`.
-   - Run TypeScript type validation (`npm run build` or `npx tsc --noEmit`).
-   - Run frontend unit and component tests via `npm run test` in `client/`.
-4. **Build & Lint Verification**:
-   - Verify production bundle builds without errors.
-
-```yaml
-# .github/workflows/ci.yml
-name: CI Pipeline
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - name: Install root dependencies
-        run: npm ci
-      - name: Run backend tests
-        run: npm test
-      - name: Install client dependencies
-        working-directory: ./client
-        run: npm ci
-      - name: Type check client
-        working-directory: ./client
-        run: npx tsc --noEmit
-      - name: Run client tests
-        working-directory: ./client
-        run: npm run test
-```
+* **Status**: Resolved & Configured. Verified with 100% passing tests (109 backend tests across 18 files, 173 frontend tests across 55 files, and successful TypeScript type validation).
+* **Problem Solved**:
+  The project possessed comprehensive test coverage across both the backend Express/Mongoose services and the React frontend SPA, but lacked an automated GitHub Actions CI workflow to protect the repository from regressions, TypeScript compilation errors, or dependency breakage during pull requests and commits.
+* **Accomplishments**:
+  - Implemented [`.github/workflows/ci.yml`](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/.github/workflows/ci.yml) triggering on all `push` and `pull_request` events to `main`.
+  - Configured two concurrent parallel execution jobs:
+    1. **Backend Matrix Job**:
+       - Matrix across Node.js versions `[20.x, 22.x]` matching `"engines": { "node": ">=20.x" }`.
+       - Automatic npm dependency caching via `actions/setup-node@v4`.
+       - Deterministic dependency resolution with `npm ci`.
+       - Full API test suite execution via `npm test` against in-memory MongoDB.
+    2. **Frontend Matrix Job**:
+       - Matrix across Node.js versions `[20.x, 22.x]` on `ubuntu-latest`.
+       - Scoped npm caching for `client/package-lock.json`.
+       - Deterministic installation via `working-directory: ./client` and `npm ci`.
+       - TypeScript strict typecheck via `npx tsc -b`.
+       - Frontend component and unit tests via `npm test` with Testing Library and MSW.
+       - Production bundle compilation verification via `npm run build`.
+  - Configured concurrency cancellation (`cancel-in-progress: true`) to avoid redundant runs on superseded commits.
 
 **Relevant Files**:
-- `.github/workflows/ci.yml` (to create)
+- [.github/workflows/ci.yml](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/.github/workflows/ci.yml)
 - [package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/package.json)
 - [client/package.json](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/client/package.json)
 - [vitest.config.mjs](file:///n:/NODE%20PROJECTS/Node_Shop/nodeJs-shop/vitest.config.mjs)

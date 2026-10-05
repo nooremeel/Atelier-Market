@@ -1,3 +1,12 @@
+/**
+ * Atelier Noir — Design Tokens (Source of Truth)
+ * 
+ * ARCHITECTURE NOTE (Section 8.8):
+ * This file is the single source of truth for design tokens (colors, RGB channels,
+ * typography scales, and spacing). These tokens are mapped into Tailwind utility
+ * classes via `client/tailwind.config.ts`. Both systems are intentionally paired.
+ */
+
 :root {
   --color-najd: #18181b;           --color-najd-rgb: 24 24 27;
   --color-plaster: #faf8f5;        --color-plaster-rgb: 250 248 245;
