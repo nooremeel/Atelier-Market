@@ -8,3 +8,4 @@ client/node_modules/
 access.log
 data/invoices/*.pdf
 !data/invoices/.gitkeep
+POSTGRES_MIGRATION.md

@@ -1,4 +1,4 @@
-﻿# Project-Specific Rules — Atelier Market (nodeJs-shop)
+# Project-Specific Rules — Atelier Market (nodeJs-shop)
 
 These rules apply only to this project. They supplement and may override the global rules in
 `~/.gemini/config/GEMINI.md`. The global rules still apply in full unless explicitly overridden here.
@@ -166,3 +166,11 @@ It must NOT contain raw DB queries, external API calls, or complex calculations.
   The build command is `npm run build` from the project root.
 - Environment variables required by the app are documented in `.env.example`. Always keep
   `.env.example` up to date when adding new env vars.
+
+---
+
+## 9. Repository Guardrails & Migration Isolation
+
+- **DO NOT add, stage, commit, or push `POSTGRES_MIGRATION.md` in this repository.**
+  This specification file belongs strictly to the upcoming `atelier-market-postgres` repository (where it will live as `docs/POSTGRES_MIGRATION.md`) and must never be tracked or committed to the MongoDB edition repository.
+- **Future Task (Post-Migration):** Once the PostgreSQL edition is fully deployed, update `README.md` in this repository with a prominent cross-link to the PostgreSQL edition live demo and repository, and align inventory/search descriptions.
