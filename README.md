@@ -246,8 +246,7 @@ Atelier-Market/
 ├── util/                       # PDF Invoice Generator & DB Connection Singleton
 ├── test/                       # Backend Supertest & Vitest Suite (18 files, 109 tests)
 ├── app.js                      # Canonical Express application configuration
-├── server.js                   # Minimal bootstrap server (~65 lines)
-└── Improvment_Plan.md          # Multi-Phase Strategic Architecture Plan
+└── server.js                   # Minimal bootstrap server (~65 lines)
 ```
 
 ---
