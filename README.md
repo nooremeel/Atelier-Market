@@ -1,6 +1,7 @@
 # Atelier Market — Luxury Artisanal Marketplace & Multi-Vendor E-Commerce Platform
 
-[![Vitest: 100% Passing](https://img.shields.io/badge/Vitest-100%25%20Passing%20(258%20tests)-10b981?style=for-the-badge&logo=vitest&logoColor=white)](https://github.com/nooremeel/Atelier-Market/tree/main/test)
+[![Vitest: 100% Passing](https://img.shields.io/badge/Vitest-100%25%20Passing%20(282%20tests)-10b981?style=for-the-badge&logo=vitest&logoColor=white)](https://github.com/nooremeel/Atelier-Market/tree/main/test)
+[![CI: GitHub Actions](https://img.shields.io/badge/CI-GitHub%20Actions%20Matrix-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/nooremeel/Atelier-Market/blob/main/.github/workflows/ci.yml)
 [![TypeScript: Strict](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://github.com/nooremeel/Atelier-Market/tree/main/client)
 [![Payment: Paymob](https://img.shields.io/badge/Payment-Paymob%20Gateway%203DS-0066FF?style=for-the-badge&logo=shield&logoColor=white)](https://github.com/nooremeel/Atelier-Market/blob/main/services/paymobService.js)
 [![Architecture: Express 5 + React 18](https://img.shields.io/badge/Architecture-Express%205%20%2B%20React%2018%20SPA-d4af37?style=for-the-badge&logo=react&logoColor=white)](https://github.com/nooremeel/Atelier-Market)
@@ -74,6 +75,16 @@ The application features an instant **1-Click Demo Persona Bar** on `/login` and
 * **Fail-Safe Browser Return & Active Reconciliation**: Dynamic redirection callback (`ALL /api/paymob/callback`) supporting cross-environment URL resolution with celebratory status banners. Active transaction inquiry (`inquirePaymobOrder`) reconciles unconfirmed orders and empties carts even if a customer uses browser back buttons.
 * **Strict RTL/LTR Isolation**: Dedicated bidirectional layout isolation ensuring card numbers, expiry dates, and CVVs preserve proper cursor tracking and numerical formatting under Arabic RTL mode.
 
+### 10. Service-Oriented Architecture, Clean Code & Automated CI (Phase 8 Refactoring)
+* **Decoupled Domain Service Layer**: Extracted core business logic out of controllers into dedicated, testable domain services (`services/authService.js`, `services/productService.js`, `services/cartService.js`, `services/orderService.js`, `services/adminService.js`, `services/paymobService.js`). Controllers now strictly serve as thin HTTP adapters validating requests and formatting JSON responses.
+* **Controller Modularization & Facade Pattern**: Monolithic `controllers/shop.js` (23.8KB) decomposed into single-responsibility domain controllers (`controllers/products.js`, `controllers/cart.js`, `controllers/orders.js`), with `controllers/shop.js` acting as a backward-compatible facade.
+* **Async/Await Uniformity**: Refactored asynchronous flows across the backend to eliminate mixed `.then()/.catch()` promise chains in favor of clean `async/await` and standardized `next(err)` error handling.
+* **Automated Multi-Version CI Matrix**: Configured GitHub Actions workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) running parallel matrix builds across Node.js `20.x` and `22.x` on `ubuntu-latest`. Enforces deterministic `npm ci`, in-memory MongoDB backend integration tests, client component tests, TypeScript strict checks (`tsc -b`), and Vite production bundle builds with auto-cancellation for superseded runs.
+* **Hardened Demo Bootstrap & Minimal Sessions**: Demo persona bootstrapping and password resets are strictly gated behind `DEMO_MODE=true` environment guards. Session storage was audited and minimized from entire Mongoose documents to sanitized `{ _id, role }` tokens to eliminate credential leakage.
+* **Bootstrap & Seeding Decoupling**: Streamlined `server.js` from 35.6KB down to a lean ~65-line bootstrap entry point with graceful shutdown handling (`SIGINT`, `SIGTERM`), extracting all seed identities, catalogs, reviews, and migration backfills into `scripts/seedDemoData.js`.
+* **Hybrid Token-Driven Tailwind Architecture**: Codified single source of truth in `client/src/design-system/tokens.css`, dynamically bound to `client/tailwind.config.ts` via RGB color channels (`rgb(var(--color-*-rgb) / <alpha-value>)`) to deliver dynamic alpha transparency, high-contrast dark mode switching, and 100% token consistency across 1,800+ JSX utility classes.
+* **Dependency & Workspace Pruning**: Purged 70+ legacy transitive packages by eliminating unused SQL connectors (`mysql2`, `sequelize`) and server-side template engines (`pug`, `ejs`, `express-handlebars`). Cleaned obsolete root media and static disk invoice PDFs in favor of dynamic in-memory buffer streaming.
+
 ---
 
 ## 🛠️ Architecture & Tech Stack
@@ -81,7 +92,7 @@ The application features an instant **1-Click Demo Persona Bar** on `/login` and
 ```mermaid
 flowchart TD
     subgraph Client["Frontend SPA (React 18 + Vite + TypeScript)"]
-        UI[Luxury Design System / TailwindCSS]
+        UI["Luxury Design System (tokens.css + Tailwind)"]
         RQ["@tanstack/react-query (State & Cache)"]
         ROUTER["React Router v6 (Nested & Protected Routes)"]
         I18N["Bilingual Core (English & Arabic RTL)"]
@@ -89,40 +100,50 @@ flowchart TD
 
     subgraph Server["Backend API (Express 5.x + Node.js)"]
         MW["Security Middleware (Helmet, CORS, Rate-Limit, CSURF)"]
-        SESS["Express-Session + MongoDB Store"]
-        CTRL["REST Controllers & Business Domain Services"]
-        PDF["PDFKit Streaming Engine"]
+        SESS["Express-Session + MongoDB Store (Sanitized Session State)"]
+        CTRL["Thin REST Controllers (products, cart, orders, admin, auth, seller)"]
+        SRV["Domain Service Layer (auth, product, cart, order, admin, paymob)"]
+        PDF["PDFKit Dynamic Streaming Engine"]
     end
 
     subgraph Database["Data Layer (MongoDB Atlas / Memory Server)"]
         MODELS["Mongoose Schemas (User, Product, Order, Review)"]
     end
 
+    subgraph Automation["Continuous Integration & DevOps"]
+        CI["GitHub Actions CI Matrix (Node 20.x & 22.x, Vitest, tsc)"]
+    end
+
     Client <-->|REST JSON API / Session Cookie| Server
-    Server <--> Database
+    CTRL --> SRV
+    SRV <--> Database
+    CI -.->|Automated Verification| Server
+    CI -.->|Automated Verification| Client
 ```
 
 ### Technology Breakdown
-* **Frontend**: React 18, TypeScript (Strict), Vite, TailwindCSS (custom luxury tokens: Gold Leaf, Sand, Silk, Plaster, Najd Black), React Router 6, TanStack Query v5, Leaflet, MSW (Mock Service Worker).
-* **Backend**: Node.js, Express 5.x, Mongoose / MongoDB Atlas, Paymob Accept Gateway API (Card 3DS & Webhooks), Multer, PDFKit, Helmet, Compression, Morgan, Express-Rate-Limit, Express-Validator.
-* **Testing & Quality Assurance**: Vitest, React Testing Library, Supertest, MongoDB Memory Server.
+* **Frontend**: React 18, TypeScript (Strict), Vite, TailwindCSS (custom luxury tokens via CSS variables & RGB channels: Gold Leaf, Sand, Silk, Plaster, Najd Black), React Router 6, TanStack Query v5, Leaflet, MSW (Mock Service Worker).
+* **Backend**: Node.js, Express 5.x, Mongoose / MongoDB Atlas, Domain Service Layer (`services/*`), Paymob Accept Gateway API (Card 3DS & Webhooks), Multer, PDFKit, Helmet, Compression, Morgan, Express-Rate-Limit, Express-Validator.
+* **DevOps, Testing & Quality Assurance**: GitHub Actions CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)), Vitest (109 backend + 173 frontend tests · 100% passing), React Testing Library, Supertest, MongoDB Memory Server.
 
 ---
 
-## 🧪 Automated Test Suite (258 Tests · 100% Pass)
+## 🧪 Automated Test Suite (282 Tests · 100% Pass)
 
-The application maintains comprehensive automated test coverage across both client components and backend REST endpoints:
+The application maintains comprehensive automated test coverage across client components, domain services, and backend REST endpoints:
 
 ```bash
-# Run backend integration tests (16 test files, 85 tests)
+# Run backend integration & service tests (18 test files, 109 tests)
 npm test
 
 # Run frontend React component tests (55 test files, 173 tests)
 npm --prefix client test
 
-# Run full production typecheck & client build
+# Run TypeScript strict typecheck & client build
 npm run client:build
 ```
+
+All test suites and production build scripts are continuously executed on every push and pull request via [GitHub Actions CI](.github/workflows/ci.yml) against Node.js 20.x and 22.x.
 
 ---
 
@@ -191,27 +212,41 @@ npm start
 
 ```text
 Atelier-Market/
+├── .github/
+│   └── workflows/
+│       └── ci.yml              # Automated CI matrix (Node 20.x/22.x, Vitest, tsc, build)
 ├── client/                     # React 18 + TypeScript SPA
 │   ├── src/
 │   │   ├── components/         # Shared design system components (Drawer, FreeShippingMeter, etc.)
-│   │   ├── features/
-│   │   │   ├── admin/          # Platform Admin Suite (Analytics, Orders, Artisans)
-│   │   │   ├── auth/           # Login, Register, Persona Bar, Demo Switcher
-│   │   │   ├── cart/           # CartDrawer, CartPage, useCart, useDiscount
-│   │   │   ├── orders/         # OrdersPage, CheckoutPage, Visual Tracker
-│   │   │   ├── products/       # Catalog, ProductDetail, Sticky Bar, Reviews
-│   │   │   └── seller/         # Studio Dashboard, Product CRUD, Seller Orders
+│   │   ├── design-system/      # tokens.css (Token Authority) & global.css
+│   │   ├── features/           # Domain feature folders (admin, auth, cart, orders, products, seller)
 │   │   ├── lib/                # API client, i18n, Theme, Image helpers
 │   │   └── router.tsx          # App routing & role guards
-├── controllers/                # Express 5 Business Logic Controllers
-│   ├── adminController.js      # Platform Admin stats, orders, & catalog audits
-│   ├── auth.js                 # Authentication & auto-bootstrapping
-│   ├── sellerController.js     # Artisan seller management & tracking milestones
-│   └── shop.js                 # Cart, Catalog, Orders, & PDF Invoicing
-├── models/                     # Mongoose Data Schemas (User, Product, Order)
+│   └── tailwind.config.ts      # Hybrid token-driven Tailwind configuration
+├── controllers/                # Thin Express Controllers (Validation & HTTP Serialization)
+│   ├── adminController.js      # Platform Admin stats & catalog audits
+│   ├── auth.js                 # Authentication & session dispatch
+│   ├── cart.js                 # Cart line-item mutations
+│   ├── orders.js               # Order placement & PDF streaming
+│   ├── products.js             # Catalog discovery & product details
+│   ├── sellerController.js     # Artisan seller management & tracking
+│   └── shop.js                 # Backward-compatible shop facade
+├── services/                   # Decoupled Domain Service Layer
+│   ├── adminService.js         # Marketplace GMV & directory aggregations
+│   ├── authService.js          # Credential auth, demo provisioning, reset tokens
+│   ├── cartService.js          # Cart serialization & stock validation
+│   ├── orderService.js         # Order creation, atomic stock, reconciliation
+│   ├── paymobService.js        # 3DS vault, webhooks, HMAC-SHA512 verification
+│   └── productService.js       # Catalog filters, pagination, piece CRUD
+├── models/                     # Mongoose Data Schemas (User, Product, Order, Review)
 ├── routes/                     # Express API Route Definitions
-├── util/                       # PDF Invoice Generator & File Handlers
-├── test/                       # Backend Supertest Integration Test Suite
+├── scripts/                    # Maintenance & Seed Scripts
+│   ├── cleanSaraOrders.js      # Demo patron order history cleanup
+│   └── seedDemoData.js         # Comprehensive demo dataset bootstrap
+├── util/                       # PDF Invoice Generator & DB Connection Singleton
+├── test/                       # Backend Supertest & Vitest Suite (18 files, 109 tests)
+├── app.js                      # Canonical Express application configuration
+├── server.js                   # Minimal bootstrap server (~65 lines)
 └── Improvment_Plan.md          # Multi-Phase Strategic Architecture Plan
 ```
 
